@@ -254,17 +254,17 @@ export const SingleCocheraPage: React.FC = () => {
                 Descripción Detallada
               </h2>
               <div className="text-slate-700 text-base leading-relaxed space-y-4 font-normal tracking-wide">
-                <p className="whitespace-pre-line">
-                  {cochera.descripcion}
-                </p>
-                <div className="p-4 rounded-xl bg-brand-50/50 border border-brand-200/60 text-xs font-medium text-brand-900 space-y-2">
-                  <p className="font-bold text-brand-700">Aspectos Destacados de la Propiedad:</p>
-                  <ul className="list-disc list-inside space-y-1 text-slate-700">
-                    <li>Acceso cómodo y rápido con portón automático.</li>
-                    <li>Sistemas de seguridad física y cámaras de vigilancia las 24 horas.</li>
-                    <li>Excelente ubicación estratégica en zona de alta demanda en CABA.</li>
-                  </ul>
-                </div>
+                {cochera.descripcion ? (
+                  cochera.descripcion.split('\n').filter(p => p.trim().length > 0).map((paragraph, idx) => (
+                    <p key={idx} className="leading-relaxed text-slate-700 text-base sm:text-lg">
+                      {paragraph}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-slate-500 italic text-sm">
+                    Sin descripción detallada publicada. Consultá por WhatsApp para coordinar visita o asesoramiento.
+                  </p>
+                )}
               </div>
             </div>
 
@@ -286,6 +286,7 @@ export const SingleCocheraPage: React.FC = () => {
                 </div>
               </div>
             )}
+            
             {/* Audio Interview Player (if available from WordPress) */}
             {cochera.audioUrl && (
               <div className="bg-white p-6 sm:p-8 rounded-card border border-slate-200 shadow-sm space-y-4">
@@ -299,23 +300,29 @@ export const SingleCocheraPage: React.FC = () => {
               </div>
             )}
 
-            {/* Location Map Indicator */}
+            {/* Location Google Map Embed */}
             <div className="bg-white p-6 sm:p-8 rounded-card border border-slate-200 shadow-sm space-y-4">
-              <h2 className="text-xl font-extrabold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-brand-600" />
-                <span>Ubicación y Entorno</span>
-              </h2>
-              <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center">
-                <div className="absolute inset-0 bg-slate-200 opacity-60 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px]" />
-                <div className="relative z-10 bg-white p-6 rounded-2xl shadow-xl text-center space-y-2 border border-slate-200 max-w-sm">
-                  <div className="w-12 h-12 rounded-full bg-brand-600 text-white flex items-center justify-center mx-auto shadow-lg animate-bounce">
-                    <MapPin className="w-6 h-6" />
-                  </div>
-                  <span className="font-extrabold text-sm text-slate-900 block">{cochera.direccion || `${cochera.zona}, CABA`}</span>
-                  <p className="text-xs text-slate-500 leading-normal">
-                    Ubicación estratégica en {cochera.zona}, CABA.
-                  </p>
-                </div>
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h2 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-brand-600" />
+                  <span>Ubicación en Google Maps</span>
+                </h2>
+                <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                  {cochera.direccion || `${cochera.zona}, CABA`}
+                </span>
+              </div>
+              <div className="relative aspect-[16/9] sm:aspect-[21/9] rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-inner">
+                <iframe
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                    cochera.lat && cochera.lng
+                      ? `${cochera.lat},${cochera.lng}`
+                      : `${cochera.direccion || cochera.titulo} ${cochera.zona} Buenos Aires`
+                  )}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
+                  title={`Google Maps - ${cochera.titulo}`}
+                  className="w-full h-full border-0"
+                  allowFullScreen
+                  loading="lazy"
+                />
               </div>
             </div>
 

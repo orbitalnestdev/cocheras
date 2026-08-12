@@ -261,13 +261,18 @@ export class WordPressService {
       const isUSD = postfix.includes('USD') || postfix.includes('U$S') || prefix.includes('USD') || prefix.includes('U$S');
       const moneda: 'USD' | 'ARS' = isUSD ? 'USD' : 'ARS';
 
-      // Video Tour URL
+      // Video Tour URL parser
       let videoUrl: string | undefined = undefined;
       if (meta.REAL_HOMES_tour_video_url) {
         videoUrl = meta.REAL_HOMES_tour_video_url;
-      } else if (Array.isArray(meta.inspiry_video_group) && meta.inspiry_video_group[0]?.inspiry_video_url) {
-        videoUrl = meta.inspiry_video_group[0].inspiry_video_url;
-      } else {
+      } else if (Array.isArray(meta.inspiry_video_group)) {
+        meta.inspiry_video_group.forEach((g: any) => {
+          if (g.inspiry_video_group_url) videoUrl = g.inspiry_video_group_url;
+          else if (g.inspiry_video_url) videoUrl = g.inspiry_video_url;
+        });
+      }
+      
+      if (!videoUrl) {
         const ytMatch = content.match(/(?:https?:\/\/(?:www\.)?(?:youtube\.com\/(?:embed\/|watch\?v=)|youtu\.be\/)|vimeo\.com\/)([a-zA-Z0-9_-]+)/);
         if (ytMatch && ytMatch[1]) {
           if (ytMatch[0].includes('youtube') || ytMatch[0].includes('youtu.be')) {
@@ -322,7 +327,7 @@ export class WordPressService {
         }
       }
 
-      // Address: Only from real WP meta or zona
+      // Address: Only from real WP meta or title
       const direccion = meta.REAL_HOMES_property_address || undefined;
 
       // Extract Images: ZERO Unsplash Fallbacks
@@ -361,7 +366,7 @@ export class WordPressService {
         }
       }
 
-      // Geocoding Coordinates: Only real CABA/GBA bounds, NO synthetic hash offsets
+      // Geocoding Coordinates: Check real WP meta or geocode real CABA address
       let lat: number | undefined = undefined;
       let lng: number | undefined = undefined;
 
@@ -371,6 +376,69 @@ export class WordPressService {
       if (!isNaN(rawLat) && !isNaN(rawLng) && rawLat < -34.30 && rawLat > -34.90 && rawLng < -58.10 && rawLng > -58.90) {
         lat = rawLat;
         lng = rawLng;
+      } else {
+        // Geocode CABA streets & neighborhoods
+        const searchText = `${title} ${direccion || ''} ${zona}`.toLowerCase();
+        const cabaLocations: { key: string; lat: number; lng: number }[] = [
+          { key: 'marcelo t. de alvear', lat: -34.5956, lng: -58.3842 },
+          { key: '9 de julio', lat: -34.6081, lng: -58.3805 },
+          { key: 'armenia', lat: -34.5878, lng: -58.4215 },
+          { key: 'medrano', lat: -34.5992, lng: -58.4208 },
+          { key: '3 de febrero', lat: -34.5578, lng: -58.4534 },
+          { key: 'ciudad de la paz', lat: -34.5632, lng: -58.4570 },
+          { key: 'echeverria', lat: -34.5643, lng: -58.4580 },
+          { key: 'echeverría', lat: -34.5643, lng: -58.4580 },
+          { key: 'cramer', lat: -34.5683, lng: -58.4584 },
+          { key: 'crámer', lat: -34.5683, lng: -58.4584 },
+          { key: 'olazabal', lat: -34.5621, lng: -58.4610 },
+          { key: 'olazábal', lat: -34.5621, lng: -58.4610 },
+          { key: 'vidal', lat: -34.5621, lng: -58.4610 },
+          { key: 'hospital italiano', lat: -34.6056, lng: -58.4241 },
+          { key: 'parque de la innovacion', lat: -34.5471, lng: -58.4544 },
+          { key: 'parque de la innovación', lat: -34.5471, lng: -58.4544 },
+          { key: 'rivadavia', lat: -34.6186, lng: -58.4428 },
+          { key: 'libertador', lat: -34.5492, lng: -58.4589 },
+          { key: 'recoleta', lat: -34.5889, lng: -58.3963 },
+          { key: 'palermo', lat: -34.5861, lng: -58.4252 },
+          { key: 'belgrano', lat: -34.5614, lng: -58.4560 },
+          { key: 'monserrat', lat: -34.6073, lng: -58.3842 },
+          { key: 'microcentro', lat: -34.6037, lng: -58.3816 },
+          { key: 'puerto madero', lat: -34.6118, lng: -58.3644 },
+          { key: 'caballito', lat: -34.6186, lng: -58.4428 },
+          { key: 'nuñez', lat: -34.5463, lng: -58.4632 },
+          { key: 'nunez', lat: -34.5463, lng: -58.4632 },
+          { key: 'san telmo', lat: -34.6212, lng: -58.3731 },
+          { key: 'retiro', lat: -34.5946, lng: -58.3776 },
+          { key: 'almagro', lat: -34.6083, lng: -58.4189 },
+          { key: 'villa urquiza', lat: -34.5717, lng: -58.4878 },
+          { key: 'colegiales', lat: -34.5746, lng: -58.4510 },
+          { key: 'barracas', lat: -34.6391, lng: -58.3789 },
+          { key: 'balvanera', lat: -34.6088, lng: -58.4019 },
+          { key: 'once', lat: -34.6088, lng: -58.4019 },
+          { key: 'flores', lat: -34.6279, lng: -58.4634 },
+          { key: 'san nicolás', lat: -34.6041, lng: -58.3812 },
+          { key: 'san nicolas', lat: -34.6041, lng: -58.3812 },
+          { key: 'tribunales', lat: -34.6035, lng: -58.3855 },
+          { key: 'barrio norte', lat: -34.5927, lng: -58.4061 },
+          { key: 'parque patricios', lat: -34.6358, lng: -58.4061 },
+          { key: 'villa del parque', lat: -34.6033, lng: -58.4908 },
+          { key: 'villa luro', lat: -34.6377, lng: -58.5034 },
+          { key: 'villa pueyrredon', lat: -34.5843, lng: -58.5008 },
+          { key: 'villa crespo', lat: -34.5982, lng: -58.4418 },
+          { key: 'saavedra', lat: -34.5512, lng: -58.4876 },
+          { key: 'abasto', lat: -34.6038, lng: -58.4108 },
+          { key: 'congreso', lat: -34.6117, lng: -58.3935 }
+        ];
+
+        const match = cabaLocations.find(l => searchText.includes(l.key));
+        if (match) {
+          lat = match.lat;
+          lng = match.lng;
+        } else {
+          // Default CABA central bounds if no street match
+          lat = -34.6037;
+          lng = -58.3816;
+        }
       }
 
       const cleanDesc = cleanHtml(content);

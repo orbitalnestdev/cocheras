@@ -66,10 +66,10 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
         scrollWheelZoom: false,
       });
 
-      // Add OpenStreetMap tiles (CartoDB Positron for modern dark/clean aesthetic)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        maxZoom: 19,
+      // Add Google Maps Vector tiles
+      L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        attribution: '&copy; <a href="https://maps.google.com" target="_blank" rel="noreferrer">Google Maps</a>',
+        maxZoom: 20,
       }).addTo(map);
 
       mapInstanceRef.current = map;
