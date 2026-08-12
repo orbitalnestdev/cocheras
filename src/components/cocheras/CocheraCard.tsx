@@ -122,10 +122,10 @@ export const CocheraCard: React.FC<CocheraCardProps> = ({ cochera, priority = fa
         {/* Direct Link Action */}
         <Link
           to={`/cocheras/${cochera.slug}`}
-          className="w-full py-2.5 px-4 bg-slate-900 hover:bg-brand-600 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm"
+          className="w-full py-3 px-4 bg-slate-900 group-hover:bg-brand-600 text-white font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-md group-hover:shadow-brand-600/30 group-hover:scale-[1.01] active:scale-[0.98] cursor-pointer"
         >
           <span>Ver Detalles y Consultar</span>
-          <ExternalLink className="w-3.5 h-3.5" />
+          <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </Link>
 
       </div>

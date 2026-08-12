@@ -330,16 +330,19 @@ export const SingleCocheraPage: React.FC = () => {
 
           {/* Right Column: Sticky Pricing & Lead Conversion Card */}
           <div className="lg:col-span-4 sticky top-28 space-y-6">
-            <div className="bg-white p-6 sm:p-7 rounded-card border border-slate-200 shadow-xl space-y-6">
+            <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-2xl space-y-6 relative overflow-hidden">
               
+              {/* Top Accent Color Bar */}
+              <div className="h-1.5 bg-gradient-to-r from-brand-600 via-indigo-600 to-emerald-500 absolute top-0 left-0 right-0" />
+
               {/* Price Block */}
-              <div className="pb-5 border-b border-slate-100 space-y-1">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+              <div className="pb-5 border-b border-slate-100 space-y-2 pt-1">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
                   Valor Publicado
                 </span>
                 <div className="flex items-baseline gap-1.5">
                   {cochera.consultarPrecio || !cochera.precio || cochera.precio === 0 ? (
-                    <span className="text-2xl sm:text-3xl font-black text-brand-600 tracking-tight">
+                    <span className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-brand-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">
                       Consultar Precio
                     </span>
                   ) : (
@@ -347,35 +350,49 @@ export const SingleCocheraPage: React.FC = () => {
                       <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
                         {cochera.moneda === 'USD' ? `U$S ${cochera.precio.toLocaleString('es-AR')}` : `$ ${cochera.precio.toLocaleString('es-AR')}`}
                       </span>
-                      <span className="text-sm font-bold text-slate-500">/{cochera.periodo}</span>
+                      <span className="text-xs font-extrabold text-slate-400">/{cochera.periodo}</span>
                     </>
                   )}
                 </div>
-                <div className="pt-2 flex items-center gap-2 text-xs font-bold text-emerald-600">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Expensas y gastos incluidos</span>
+                <div className="pt-1">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-extrabold text-xs border border-emerald-200/80 shadow-2xs">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Expensas y gastos incluidos</span>
+                  </span>
                 </div>
               </div>
 
-              {/* Direct WhatsApp CTA */}
-              <a
-                href={`https://wa.me/${cochera.contacto?.whatsapp || '5491136920920'}?text=${whatsappMessage}`}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full py-4 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-extrabold flex items-center justify-center gap-2.5 transition-all shadow-lg hover:shadow-emerald-600/30"
-              >
-                <MessageCircle className="w-5 h-5" />
-                <span>Consultar por WhatsApp</span>
-              </a>
+              {/* Direct WhatsApp CTA Button with Micro-animations & Glow */}
+              <div className="space-y-2.5">
+                <a
+                  href={`https://wa.me/${cochera.contacto?.whatsapp || '5491136920920'}?text=${whatsappMessage}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full py-4 px-5 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-2xl text-sm font-black flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] ring-1 ring-emerald-400/30 group cursor-pointer"
+                >
+                  <MessageCircle className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300 fill-white/20" />
+                  <span>Consultar por WhatsApp</span>
+                </a>
+
+                {/* Secondary Direct Call Button */}
+                <a
+                  href={`tel:${cochera.contacto?.telefono || '+541149973559'}`}
+                  className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all border border-slate-200/80 hover:scale-[1.01] active:scale-[0.98]"
+                >
+                  <Phone className="w-3.5 h-3.5 text-brand-600" />
+                  <span>Llamar al {cochera.contacto?.telefono || '+54 11 4997-3559'}</span>
+                </a>
+              </div>
 
               {/* Email Contact Form */}
-              <div className="pt-2 space-y-4">
-                <h3 className="font-extrabold text-sm text-slate-900 border-b border-slate-100 pb-2">
-                  Enviar Consulta Directa
+              <div className="pt-2 space-y-4 border-t border-slate-100">
+                <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-brand-600" />
+                  <span>Enviar Consulta por Email</span>
                 </h3>
 
                 {enviado ? (
-                  <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-xl text-center space-y-2">
+                  <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-2 animate-fadeIn">
                     <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
                     <h4 className="font-extrabold text-base text-emerald-900">¡Consulta Recibida!</h4>
                     <p className="text-xs text-emerald-700">Te responderemos a la brevedad.</p>
@@ -383,53 +400,54 @@ export const SingleCocheraPage: React.FC = () => {
                 ) : (
                   <form onSubmit={handleContactSubmit} className="space-y-3">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">Nombre Completo</label>
+                      <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Nombre Completo</label>
                       <input
                         type="text"
                         placeholder="Tu Nombre"
                         value={nombre}
                         onChange={(e) => setNombre(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-brand-500"
+                        className="w-full px-4 py-2.5 bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-xl text-xs font-semibold text-slate-900 transition-all placeholder:text-slate-400 focus:outline-none"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">Email</label>
+                      <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Email</label>
                       <input
                         type="email"
                         placeholder="tu@email.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-brand-500"
+                        className="w-full px-4 py-2.5 bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-xl text-xs font-semibold text-slate-900 transition-all placeholder:text-slate-400 focus:outline-none"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">Teléfono / WhatsApp</label>
+                      <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Teléfono / WhatsApp</label>
                       <input
                         type="tel"
                         placeholder="Ej: 11 3692 0920"
                         value={telefono}
                         onChange={(e) => setTelefono(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-brand-500"
+                        className="w-full px-4 py-2.5 bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-xl text-xs font-semibold text-slate-900 transition-all placeholder:text-slate-400 focus:outline-none"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">Mensaje</label>
+                      <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Mensaje</label>
                       <textarea
                         rows={3}
                         value={mensaje}
                         onChange={(e) => setMensaje(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-brand-500"
+                        className="w-full px-4 py-2.5 bg-slate-50/80 hover:bg-white focus:bg-white border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 rounded-xl text-xs font-semibold text-slate-900 transition-all placeholder:text-slate-400 focus:outline-none"
                         required
                       />
                     </div>
                     <button
                       type="submit"
-                      className="w-full py-3.5 px-4 bg-brand-600 hover:bg-brand-700 text-white text-xs font-extrabold rounded-xl transition-all shadow-md"
+                      className="w-full py-3.5 px-4 bg-slate-900 hover:bg-brand-600 text-white text-xs font-black rounded-xl transition-all duration-300 shadow-md hover:shadow-brand-600/30 hover:scale-[1.01] active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
                     >
-                      Enviar Consulta
+                      <Mail className="w-4 h-4" />
+                      <span>Enviar Consulta por Email</span>
                     </button>
                   </form>
                 )}
