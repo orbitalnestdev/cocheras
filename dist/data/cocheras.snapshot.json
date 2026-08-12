@@ -1,0 +1,106 @@
+[
+  {
+    "id": 1,
+    "slug": "cochera-en-recoleta",
+    "titulo": "Cochera en Recoleta",
+    "zona": "Recoleta",
+    "ciudad": "CABA",
+    "direccion": "Av. Las Heras 2100, Recoleta, CABA",
+    "precio": 55000,
+    "moneda": "ARS",
+    "periodo": "mes",
+    "tipo": "cubierta",
+    "tipoAcceso": "Portón automático con tarjeta magnética",
+    "features": ["Cubierta", "Seguridad 24hs", "Cámaras CCTV", "Elevador de autos"],
+    "destacada": true,
+    "disponible": true,
+    "imagenDestacada": "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=1200&q=80",
+    "imagenes": [
+      {
+        "url": "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Vista principal de cochera cubierta en Recoleta",
+        "width": 1200,
+        "height": 900
+      }
+    ],
+    "descripcion": "Excelente espacio de estacionamiento fijo y cubierto en primer subsuelo sobre la tradicional Av. Las Heras en Recoleta."
+  },
+  {
+    "id": 2,
+    "slug": "cochera-en-palermo",
+    "titulo": "Cochera en Palermo",
+    "zona": "Palermo",
+    "ciudad": "CABA",
+    "direccion": "Humboldt 1900, Palermo Hollywood, CABA",
+    "precio": 48000,
+    "moneda": "ARS",
+    "periodo": "mes",
+    "tipo": "descubierta",
+    "tipoAcceso": "Control remoto individual",
+    "features": ["Descubierta", "Portón automático", "Acceso 24hs"],
+    "destacada": true,
+    "disponible": true,
+    "imagenDestacada": "https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=1200&q=80",
+    "imagenes": [
+      {
+        "url": "https://images.unsplash.com/photo-1590674899484-d5640e854abe?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Cochera fija descubierta en Palermo",
+        "width": 1200,
+        "height": 900
+      }
+    ],
+    "descripcion": "Espacio exclusivo para autos o camionetas medianas en la zona gastronómica y de oficinas de Palermo Hollywood."
+  },
+  {
+    "id": 3,
+    "slug": "cochera-en-belgrano",
+    "titulo": "Cochera en Belgrano",
+    "zona": "Belgrano",
+    "ciudad": "CABA",
+    "direccion": "Av. Cabildo 2400, Belgrano, CABA",
+    "precio": 52000,
+    "moneda": "ARS",
+    "periodo": "mes",
+    "tipo": "cubierta",
+    "tipoAcceso": "Control de huella / tarjeta",
+    "features": ["Cubierta", "Cámaras", "Vigilancia nocturna", "Fácil acceso"],
+    "destacada": true,
+    "disponible": true,
+    "imagenDestacada": "https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&w=1200&q=80",
+    "imagenes": [
+      {
+        "url": "https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Cochera moderna cubierta en Belgrano",
+        "width": 1200,
+        "height": 900
+      }
+    ],
+    "descripcion": "Espacio techado muy bien ubicado a metros del subte D en Belgrano."
+  },
+  {
+    "id": 4,
+    "slug": "cochera-en-microcentro",
+    "titulo": "Cochera en Microcentro",
+    "zona": "Microcentro",
+    "ciudad": "CABA",
+    "direccion": "Florida 600, Microcentro, CABA",
+    "precio": 45000,
+    "moneda": "ARS",
+    "periodo": "mes",
+    "tipo": "cubierta",
+    "tipoAcceso": "Garajista y portón automatizado",
+    "features": ["Cubierta", "Vigilancia", "Seguridad 24hs", "Sistema anti-incendio"],
+    "destacada": true,
+    "disponible": true,
+    "imagenDestacada": "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80",
+    "imagenes": [
+      {
+        "url": "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Subsuelo iluminado en Microcentro",
+        "width": 1200,
+        "height": 900
+      }
+    ],
+    "descripcion": "Ubicación clave para ejecutivos e inquilinos del centro financiero."
+  }
+]
