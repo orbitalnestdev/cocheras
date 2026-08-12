@@ -85,11 +85,11 @@ export const SingleCocheraPage: React.FC = () => {
     );
   }
 
-  const formattedPrice = new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: cochera.moneda || 'ARS',
-    maximumFractionDigits: 0,
-  }).format(cochera.precio);
+  const priceText = cochera.consultarPrecio || cochera.precio === undefined || cochera.precio === 0
+    ? 'Consultar Precio'
+    : cochera.moneda === 'USD'
+      ? `U$S ${cochera.precio.toLocaleString('es-AR')}`
+      : `$ ${cochera.precio.toLocaleString('es-AR')}`;
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +97,7 @@ export const SingleCocheraPage: React.FC = () => {
   };
 
   const whatsappMessage = encodeURIComponent(
-    `Hola! Vi la publicación "${cochera.titulo}" ($${cochera.precio.toLocaleString('es-AR')}/${cochera.periodo}) en Cocheras.com.ar y me gustaría consultar disponibilidad.`
+    `Hola! Vi la publicación "${cochera.titulo}" (${priceText}) en Cocheras.com.ar y me gustaría consultar disponibilidad.`
   );
 
   return (

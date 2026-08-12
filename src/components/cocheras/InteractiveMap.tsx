@@ -86,20 +86,25 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
       ? cocheras
       : cocheras.filter(c => c.zona.toLowerCase().includes(activeZone.toLowerCase()));
 
-    if (filtered.length > 0 && !selectedCochera) {
+    // Filter properties that have valid lat/lng coordinates for map rendering
+    const withCoords = filtered.filter(item => item.lat !== undefined && item.lng !== undefined);
+
+    if (withCoords.length > 0 && !selectedCochera) {
+      setSelectedCochera(withCoords[0]);
+    } else if (filtered.length > 0 && !selectedCochera) {
       setSelectedCochera(filtered[0]);
     }
 
-    // Add markers
-    filtered.forEach((item) => {
-      const lat = item.lat || -34.6037;
-      const lng = item.lng || -58.3816;
+    // Add markers only for properties with real coordinates
+    withCoords.forEach((item) => {
+      const lat = item.lat!;
+      const lng = item.lng!;
 
-      const formattedPrice = item.consultarPrecio || !item.precio || item.precio === 0
+      const formattedPrice = item.consultarPrecio || item.precio === undefined || item.precio === 0
         ? 'Consultar'
         : item.moneda === 'USD'
-          ? `U$S ${item.precio < 100000 ? item.precio.toLocaleString('es-AR') : Math.round(item.precio / 1000) + 'k'}`
-          : `$${item.precio < 1000000 ? Math.round(item.precio / 1000) + 'k' : (item.precio / 1000000).toFixed(1) + 'M'}`;
+          ? `U$S ${item.precio.toLocaleString('es-AR')}`
+          : `$ ${item.precio.toLocaleString('es-AR')}`;
 
       const isSelected = selectedCochera?.id === item.id;
       const icon = createCustomIcon(formattedPrice, isSelected);
@@ -107,16 +112,20 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
       const marker = L.marker([lat, lng], { icon }).addTo(map);
 
       // Popup Content
+      const imgMarkup = item.imagenDestacada
+        ? `<img src="${item.imagenDestacada}" style="width:100%; height:110px; object-fit:cover; border-radius:10px; margin-bottom:8px;" />`
+        : `<div style="width:100%; height:80px; background:#F1F5F9; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#64748B; font-size:11px; font-weight:bold; margin-bottom:8px;">Sin foto</div>`;
+
       const popupContent = document.createElement('div');
       popupContent.className = 'p-1 text-slate-900 font-sans';
       popupContent.innerHTML = `
         <div style="width: 220px; font-family: inherit;">
-          <img src="${item.imagenDestacada}" style="width:100%; height:110px; object-fit:cover; border-radius:10px; margin-bottom:8px;" />
+          ${imgMarkup}
           <h4 style="font-weight:800; font-size:13px; margin:0 0 4px 0; color:#0F172A; line-height:1.2;">${item.titulo}</h4>
           <p style="font-size:11px; color:#64748B; margin:0 0 8px 0;">📍 ${item.direccion || item.zona + ', CABA'}</p>
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span style="font-weight:800; font-size:14px; color:${item.consultarPrecio ? '#2563EB' : '#0F172A'};">
-              ${item.consultarPrecio || !item.precio || item.precio === 0 ? 'Consultar Precio' : item.moneda === 'USD' ? `U$S ${item.precio.toLocaleString('es-AR')}` : `$ ${item.precio.toLocaleString('es-AR')}`}
+              ${item.consultarPrecio || item.precio === undefined || item.precio === 0 ? 'Consultar Precio' : item.moneda === 'USD' ? `U$S ${item.precio.toLocaleString('es-AR')}` : `$ ${item.precio.toLocaleString('es-AR')}`}
             </span>
           </div>
         </div>
@@ -132,9 +141,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
       markersRef.current[String(item.id)] = marker;
     });
 
-    // Adjust view if zone filter changes
-    if (activeZone !== 'todas' && filtered.length > 0) {
-      const bounds = L.latLngBounds(filtered.map(c => [c.lat || -34.6037, c.lng || -58.3816]));
+    // Adjust view if zone filter changes and we have valid coords
+    if (activeZone !== 'todas' && withCoords.length > 0) {
+      const bounds = L.latLngBounds(withCoords.map(c => [c.lat!, c.lng!]));
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
     }
 
@@ -267,7 +276,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
               <div className="space-y-2 pt-2">
                 <a
                   href={`https://wa.me/${selectedCochera.contacto?.whatsapp || '5491149973559'}?text=${encodeURIComponent(
-                    `Hola! Estoy interesado en alquilar la cochera "${selectedCochera.titulo}" ($${selectedCochera.precio.toLocaleString('es-AR')}/mes) ubicada en ${selectedCochera.zona} que vi en el mapa de la Home.`
+                    `Hola! Estoy interesado en la cochera "${selectedCochera.titulo}" (${selectedCochera.consultarPrecio || !selectedCochera.precio ? 'Consultar Precio' : `$${selectedCochera.precio.toLocaleString('es-AR')}`}) ubicada en ${selectedCochera.zona} que vi en el mapa.`
                   )}`}
                   target="_blank"
                   rel="noreferrer"

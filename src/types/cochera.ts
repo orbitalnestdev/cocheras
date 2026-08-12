@@ -18,7 +18,8 @@ export interface Cochera {
   zona: string;
   ciudad: string;
   direccion?: string;
-  precio: number;
+  precio?: number;
+  consultarPrecio: boolean;
   moneda: Moneda;
   periodo: Periodo;
   tipo: TipoCochera;
@@ -27,17 +28,19 @@ export interface Cochera {
   destacada: boolean;
   disponible: boolean;
   imagenes: ImagenCochera[];
-  imagenDestacada: string;
+  imagenDestacada?: string;
   descripcion: string;
   ambientes?: number;
   banos?: number;
   superficie?: number; // m²
   lat?: number;
   lng?: number;
-  consultarPrecio?: boolean;
   videoUrl?: string;
   audioUrl?: string;
   audioTitle?: string;
+  statusProperty?: string; // 'En Alquiler' | 'En Venta' | 'Emprendimiento'
+  codigoRef?: string;
+  fechaPublicacion?: string;
   contacto?: {
     telefono: string;
     whatsapp: string;
@@ -58,11 +61,12 @@ export interface FiltrosCochera {
 export interface WPApiConfig {
   baseUrl: string;
   useFallbackIfError: boolean;
-  status: 'connected' | 'fallback' | 'checking';
+  status: 'connected' | 'error' | 'fallback' | 'checking';
+  totalCount?: number;
   lastChecked?: string;
 }
 
-// Zod schema for validating WP API response items safely
+// Zod schema for validating WP API response items safely without invention
 export const CocheraZodSchema = z.object({
   id: z.union([z.number(), z.string()]),
   slug: z.string(),
@@ -70,24 +74,26 @@ export const CocheraZodSchema = z.object({
   zona: z.string().default('CABA'),
   ciudad: z.string().default('CABA'),
   direccion: z.string().optional(),
-  precio: z.number().catch(50000),
-  moneda: z.enum(['ARS', 'USD']).catch('ARS'),
-  periodo: z.enum(['mes', 'dia', 'hora']).catch('mes'),
-  tipo: z.enum(['cubierta', 'descubierta']).catch('cubierta'),
+  precio: z.number().optional(),
+  consultarPrecio: z.boolean().default(true),
+  moneda: z.enum(['ARS', 'USD']).default('ARS'),
+  periodo: z.enum(['mes', 'dia', 'hora']).default('mes'),
+  tipo: z.enum(['cubierta', 'descubierta']).default('cubierta'),
   features: z.array(z.string()).default([]),
-  destacada: z.boolean().catch(false),
-  disponible: z.boolean().catch(true),
+  destacada: z.boolean().default(false),
+  disponible: z.boolean().default(true),
   imagenes: z.array(z.object({
     url: z.string(),
-    alt: z.string().catch('Cochera'),
+    alt: z.string().default('Cochera'),
     width: z.number().optional(),
     height: z.number().optional()
   })).default([]),
-  imagenDestacada: z.string(),
+  imagenDestacada: z.string().optional(),
   descripcion: z.string().default(''),
-  ambientes: z.number().optional(),
-  banos: z.number().optional(),
   superficie: z.number().optional(),
   lat: z.number().optional(),
-  lng: z.number().optional()
+  lng: z.number().optional(),
+  statusProperty: z.string().optional(),
+  codigoRef: z.string().optional(),
+  fechaPublicacion: z.string().optional()
 });

@@ -5,7 +5,7 @@ import { WordPressService } from '../../services/wordpressService';
 interface WpStatusModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onStatusChange?: (status: 'connected' | 'fallback' | 'checking') => void;
+  onStatusChange?: (status: 'connected' | 'error' | 'fallback' | 'checking') => void;
 }
 
 export const WpStatusModal: React.FC<WpStatusModalProps> = ({ isOpen, onClose, onStatusChange }) => {
