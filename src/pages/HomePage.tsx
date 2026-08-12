@@ -71,9 +71,15 @@ export const HomePage: React.FC = () => {
       {/* ========================================================================= */}
       <section className="relative bg-ink-950 text-white pt-28 pb-16 lg:pt-36 lg:pb-24 overflow-hidden flex items-center">
         
-        {/* Background Overlay */}
-        <div className="absolute inset-0 z-0 bg-gradient-to-br from-ink-950 via-ink-900 to-slate-950 opacity-95">
-          <div className="absolute inset-0 bg-[radial-gradient(#2563EB_1px,transparent_1px)] [background-size:24px_24px] opacity-10" />
+        {/* Background Image & Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/img/hero-bg.jpg"
+            alt="Fondo Cochera Premium"
+            className="w-full h-full object-cover object-center brightness-[0.35] contrast-[1.1] scale-105 animate-pulse-slow"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/85 to-slate-950/60" />
+          <div className="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:24px_24px] opacity-15" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">

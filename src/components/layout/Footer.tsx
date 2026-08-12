@@ -12,13 +12,12 @@ export const Footer: React.FC = () => {
           
           {/* Brand Info (Spans 2 columns on lg) */}
           <div className="lg:col-span-2 space-y-4">
-            <Link to="/" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-brand flex items-center justify-center">
-                <Car className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-extrabold text-xl tracking-tight text-white">
-                COCHERAS
-              </span>
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <img
+                src="/img/logo.png"
+                alt="Cocheras.com.ar Logo"
+                className="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+              />
             </Link>
             <p className="text-muted-dark text-sm max-w-sm leading-relaxed">
               La plataforma #1 para la gestión, compra y alquiler de cocheras y garages en Capital Federal y GBA.

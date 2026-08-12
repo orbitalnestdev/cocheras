@@ -4,7 +4,6 @@ import {
   Menu,
   X,
   Database,
-  PlusCircle,
   ChevronDown,
   Car,
   Building2,
@@ -25,7 +24,7 @@ export const Header: React.FC = () => {
   const [wpStatus, setWpStatus] = useState(WordPressService.getConfig().status);
   
   // Dropdown hover/click states for desktop
-  const [activeDropdown, setActiveDropdown] = useState<'propiedades' | 'nosotros' | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<'propiedades' | null>(null);
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const location = useLocation();
@@ -44,7 +43,7 @@ export const Header: React.FC = () => {
     setActiveDropdown(null);
   }, [location.pathname]);
 
-  const handleMouseEnter = (menu: 'propiedades' | 'nosotros') => {
+  const handleMouseEnter = (menu: 'propiedades') => {
     if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
     setActiveDropdown(menu);
   };
@@ -61,12 +60,6 @@ export const Header: React.FC = () => {
     { name: 'Garages y Playas', path: '/garages-y-playas', desc: 'Garajes comerciales y playas', icon: Building2 },
     { name: 'Emprendimientos', path: '/emprendimientos', desc: 'Inversiones en pozo y proyectos', icon: Sparkles },
     { name: 'Oficinas y Comercios', path: '/oficinas', desc: 'Espacios corporativos con cochera', icon: Briefcase },
-  ];
-
-  const nosotrosGroup = [
-    { name: 'Quiénes Somos', path: '/quienes-somos', desc: 'Trayectoria y equipo matriculado', icon: Users },
-    { name: 'En los Medios', path: '/prensa', desc: 'Apariciones en televisión y diarios', icon: Newspaper },
-    { name: 'Sala de Videos', path: '/videos', desc: 'Informes de mercado y recorridos', icon: Video },
   ];
 
   const isActive = (path: string) => {
@@ -100,7 +93,7 @@ export const Header: React.FC = () => {
               />
             </Link>
 
-            {/* Optimized & Grouped Desktop Navigation */}
+            {/* Desktop Navigation - Distinct & Separated Items */}
             <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2 font-semibold text-xs xl:text-sm">
               
               {/* 1. Propiedades Dropdown */}
@@ -149,7 +142,7 @@ export const Header: React.FC = () => {
                 )}
               </div>
 
-              {/* 2. Oportunidades Direct Link */}
+              {/* 2. Oportunidades */}
               <Link
                 to="/oportunidades"
                 className={`px-3 py-2 rounded-xl transition-all inline-flex items-center gap-1.5 ${
@@ -162,67 +155,48 @@ export const Header: React.FC = () => {
                 <span>Oportunidades</span>
               </Link>
 
-              {/* 3. Nosotros & Prensa Dropdown */}
-              <div
-                className="relative"
-                onMouseEnter={() => handleMouseEnter('nosotros')}
-                onMouseLeave={handleMouseLeave}
-              >
-                <button
-                  className={`px-3 py-2 rounded-xl inline-flex items-center gap-1.5 transition-all cursor-pointer ${
-                    isGroupActive(nosotrosGroup) || activeDropdown === 'nosotros'
-                      ? 'text-white font-bold bg-white/10'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  <span>Nosotros y Medios</span>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === 'nosotros' ? 'rotate-180 text-brand-400' : ''}`} />
-                </button>
-
-                {/* Submenu Dropdown */}
-                {activeDropdown === 'nosotros' && (
-                  <div className="absolute top-full left-0 mt-1 w-72 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2 space-y-1 z-50 animate-fadeIn">
-                    {nosotrosGroup.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.path}
-                          to={item.path}
-                          className={`flex items-start gap-3 p-2.5 rounded-xl transition-all ${
-                            isActive(item.path)
-                              ? 'bg-brand-600/20 text-white border border-brand-500/30'
-                              : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
-                          }`}
-                        >
-                          <div className="w-8 h-8 rounded-lg bg-brand-600/10 text-brand-400 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <Icon className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <span className="text-xs font-bold text-white block leading-tight">{item.name}</span>
-                            <span className="text-[10px] text-slate-400 font-normal leading-tight block mt-0.5">{item.desc}</span>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* 4. Contacto Direct Link */}
+              {/* 3. Quiénes Somos (Separated) */}
               <Link
-                to="/contacto"
-                className={`px-3 py-2 rounded-xl transition-all ${
-                  isActive('/contacto')
+                to="/quienes-somos"
+                className={`px-3 py-2 rounded-xl transition-all inline-flex items-center gap-1.5 ${
+                  isActive('/quienes-somos')
                     ? 'text-white font-bold bg-white/10'
                     : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <span>Contacto</span>
+                <Users className="w-3.5 h-3.5 text-slate-400" />
+                <span>Quiénes Somos</span>
+              </Link>
+
+              {/* 4. En los Medios (Separated) */}
+              <Link
+                to="/prensa"
+                className={`px-3 py-2 rounded-xl transition-all inline-flex items-center gap-1.5 ${
+                  isActive('/prensa')
+                    ? 'text-white font-bold bg-white/10'
+                    : 'text-slate-300 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Newspaper className="w-3.5 h-3.5 text-slate-400" />
+                <span>En los Medios</span>
+              </Link>
+
+              {/* 5. Sala de Videos */}
+              <Link
+                to="/videos"
+                className={`px-3 py-2 rounded-xl transition-all inline-flex items-center gap-1.5 ${
+                  isActive('/videos')
+                    ? 'text-white font-bold bg-white/10'
+                    : 'text-slate-300 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Video className="w-3.5 h-3.5 text-slate-400" />
+                <span>Videos</span>
               </Link>
 
             </nav>
 
-            {/* Right Action Buttons */}
+            {/* Right Action: Replaced Publicar Cochera with Contacto CTA Button */}
             <div className="hidden md:flex items-center gap-2.5 flex-shrink-0">
               {/* Discrete WP Status Icon */}
               <button
@@ -233,13 +207,13 @@ export const Header: React.FC = () => {
                 <Database className={`w-4 h-4 ${wpStatus === 'connected' ? 'text-emerald-400' : 'text-amber-400'}`} />
               </button>
 
-              {/* Primary CTA */}
+              {/* Primary CTA Button: Contacto */}
               <Link
-                to="/publicar"
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-extrabold text-white bg-gradient-brand hover:brightness-110 transition-all shadow-md hover:shadow-brand-600/30 whitespace-nowrap"
+                to="/contacto"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold text-white bg-gradient-brand hover:brightness-110 transition-all shadow-md hover:shadow-brand-600/30 whitespace-nowrap cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
               >
-                <PlusCircle className="w-4 h-4" />
-                <span>Publicar Cochera</span>
+                <Phone className="w-4 h-4" />
+                <span>Contacto</span>
               </Link>
             </div>
 
@@ -282,10 +256,10 @@ export const Header: React.FC = () => {
               ))}
             </div>
 
-            {/* Oportunidades */}
+            {/* Oportunidades & Institucional */}
             <div className="space-y-1">
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block px-3 py-1">
-                Destacados
+                Secciones
               </span>
               <Link
                 to="/oportunidades"
@@ -298,47 +272,48 @@ export const Header: React.FC = () => {
                 <Sparkles className="w-4 h-4 text-amber-400" />
                 <span>Oportunidades Destacadas</span>
               </Link>
-            </div>
-
-            {/* Nosotros & Medios */}
-            <div className="space-y-1">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block px-3 py-1">
-                Institucional y Prensa
-              </span>
-              {nosotrosGroup.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold ${
-                    isActive(item.path)
-                      ? 'text-white bg-brand-600 font-bold'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                  }`}
-                >
-                  <item.icon className="w-4 h-4 text-brand-400" />
-                  <span>{item.name}</span>
-                </Link>
-              ))}
               <Link
-                to="/contacto"
+                to="/quienes-somos"
                 className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold ${
-                  isActive('/contacto')
+                  isActive('/quienes-somos')
                     ? 'text-white bg-brand-600 font-bold'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800'
                 }`}
               >
-                <Phone className="w-4 h-4 text-brand-400" />
-                <span>Contacto</span>
+                <Users className="w-4 h-4 text-slate-400" />
+                <span>Quiénes Somos</span>
+              </Link>
+              <Link
+                to="/prensa"
+                className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold ${
+                  isActive('/prensa')
+                    ? 'text-white bg-brand-600 font-bold'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <Newspaper className="w-4 h-4 text-slate-400" />
+                <span>En los Medios</span>
+              </Link>
+              <Link
+                to="/videos"
+                className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold ${
+                  isActive('/videos')
+                    ? 'text-white bg-brand-600 font-bold'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <Video className="w-4 h-4 text-slate-400" />
+                <span>Sala de Videos</span>
               </Link>
             </div>
 
             <div className="pt-4 border-t border-slate-800 flex flex-col gap-2">
               <Link
-                to="/publicar"
+                to="/contacto"
                 className="w-full py-3 text-center text-xs font-extrabold text-white bg-gradient-brand rounded-xl shadow-md flex items-center justify-center gap-2"
               >
-                <PlusCircle className="w-4 h-4" />
-                <span>Publicar Cochera</span>
+                <Phone className="w-4 h-4" />
+                <span>Contacto</span>
               </Link>
             </div>
 

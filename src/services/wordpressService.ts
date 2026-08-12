@@ -542,16 +542,25 @@ export class WordPressService {
 
 function cleanHtml(htmlStr: string): string {
   if (!htmlStr) return '';
-  return htmlStr
+  let cleaned = htmlStr
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
     .replace(/\{"type":\s*"audio"[\s\S]*?\}/gi, '')
     .replace(/\{"type":[\s\S]*?\}/gi, '')
     .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
+    .replace(/<\/(p|div|h[1-6]|li|tr)>/gi, '\n\n')
+    .replace(/<br\s*\/?>/gi, '\n\n')
     .replace(/<[^>]+>/g, '')
     .replace(/&amp;/g, '&')
     .replace(/&#8211;/g, '–')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/\s+/g, ' ')
+    .replace(/&nbsp;/g, ' ');
+
+  // Add section spacing before capital headings (e.g. "POR QUE INVERTIR ACA?", "DESPREOCUPATE!!", "EL EDIFICIO")
+  cleaned = cleaned.replace(/([.!?])\s*([A-ZÁÉÍÓÚÑ\s–-]{4,35}\??)\s+/g, '$1\n\n$2\n\n');
+
+  // Normalize consecutive newlines
+  return cleaned
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s*\n/g, '\n\n')
     .trim();
 }
