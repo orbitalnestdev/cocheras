@@ -11,36 +11,59 @@ interface InteractiveMapProps {
 }
 
 // Custom SVG Pin Icon for Leaflet
-const createCustomIcon = (priceFormatted: string, isSelected: boolean) => {
-  const bgClass = isSelected ? '#A855F7' : '#2563EB';
+const createCustomIcon = (isFeatured: boolean, isSelected: boolean) => {
+  const pinColor = isSelected ? '#2563EB' : isFeatured ? '#F59E0B' : '#0F172A';
+  const glowColor = isSelected ? 'rgba(37, 99, 235, 0.5)' : isFeatured ? 'rgba(245, 158, 11, 0.5)' : 'rgba(15, 23, 42, 0.35)';
+  
   const svgHtml = `
     <div style="
-      background: ${bgClass};
-      color: white;
-      font-weight: 800;
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 20px;
-      box-shadow: 0 4px 14px rgba(37,99,235,0.4);
+      position: relative;
+      width: 40px;
+      height: 46px;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 4px;
-      border: 2px solid white;
-      white-space: nowrap;
+      justify-content: center;
       cursor: pointer;
-      transform: ${isSelected ? 'scale(1.15)' : 'scale(1)'};
-      transition: transform 0.2s ease;
+      transform: ${isSelected ? 'scale(1.25)' : 'scale(1)'};
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      filter: drop-shadow(0 6px 14px ${glowColor});
     ">
-      <span style="width:6px;height:6px;border-radius:50%;background:#4ADE80;"></span>
-      ${priceFormatted}
+      <div style="
+        width: 36px;
+        height: 36px;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        background: ${pinColor};
+        border: 2.5px solid #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      ">
+        <div style="
+          transform: rotate(45deg);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #FFFFFF;
+        ">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2 11.2 2 11.6 2 12v4c0 .6.4 1 1 1h2"/>
+            <circle cx="7" cy="17" r="2"/>
+            <circle cx="17" cy="17" r="2"/>
+          </svg>
+        </div>
+      </div>
     </div>
   `;
 
   return L.divIcon({
     html: svgHtml,
     className: 'custom-leaflet-marker',
-    iconSize: [80, 30],
-    iconAnchor: [40, 15],
+    iconSize: [40, 46],
+    iconAnchor: [20, 46],
+    popupAnchor: [0, -46],
   });
 };
 
@@ -100,10 +123,8 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
       const lat = item.lat!;
       const lng = item.lng!;
 
-      const formattedPrice = 'Consultar';
-
       const isSelected = selectedCochera?.id === item.id;
-      const icon = createCustomIcon(formattedPrice, isSelected);
+      const icon = createCustomIcon(Boolean(item.destacada), isSelected);
 
       const marker = L.marker([lat, lng], { icon }).addTo(map);
 
