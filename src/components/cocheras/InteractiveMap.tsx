@@ -100,11 +100,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
       const lat = item.lat!;
       const lng = item.lng!;
 
-      const formattedPrice = item.consultarPrecio || item.precio === undefined || item.precio === 0
-        ? 'Consultar'
-        : item.moneda === 'USD'
-          ? `U$S ${item.precio.toLocaleString('es-AR')}`
-          : `$ ${item.precio.toLocaleString('es-AR')}`;
+      const formattedPrice = 'Consultar';
 
       const isSelected = selectedCochera?.id === item.id;
       const icon = createCustomIcon(formattedPrice, isSelected);

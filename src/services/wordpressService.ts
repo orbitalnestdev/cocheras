@@ -248,12 +248,12 @@ export class WordPressService {
       const title = raw.title?.rendered ? cleanHtml(raw.title.rendered) : `Propiedad #${raw.id}`;
       const content = raw.content?.rendered || raw.excerpt?.rendered || '';
       
-      // Parse real price & currency
+      // Parse price & currency (User directive: Hide prices globally)
       const priceRaw = meta.REAL_HOMES_property_price || meta.precio || '';
       const parsedPrice = parseFloat(priceRaw);
       const hasNumericPrice = !isNaN(parsedPrice) && parsedPrice > 0;
       const precio = hasNumericPrice ? parsedPrice : undefined;
-      const consultarPrecio = !hasNumericPrice;
+      const consultarPrecio = true;
 
       // Currency logic: Check ONLY real prefix/postfix (STRICT, NO < 100000 GUESSING)
       const postfix = (meta.REAL_HOMES_property_price_postfix || '').toUpperCase();
