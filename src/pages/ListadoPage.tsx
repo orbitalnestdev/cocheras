@@ -29,6 +29,11 @@ export const ListadoPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 30;
 
+  // Todas las publicaciones muestran "Consultar Precio", así que el filtro y el
+  // orden por precio operan sobre un dato invisible para el usuario. Poner esto
+  // en true los vuelve a mostrar el día que se publiquen los valores.
+  const MOSTRAR_FILTROS_DE_PRECIO = false;
+
   // Determine section config based on route pathname
   const getSectionConfig = (pathname: string) => {
     switch (pathname) {
@@ -37,7 +42,8 @@ export const ListadoPage: React.FC = () => {
           eyebrow: 'SECCIÓN EMPRENDIMIENTOS',
           title: 'Emprendimientos Inmobiliarios',
           description: 'Oportunidades de inversión en pozo, garajes comerciales y proyectos en desarrollo.',
-          filterTerm: 'Emprendimiento',
+          filterTerm: '',
+          tipoPropiedad: 'emprendimiento',
           destacada: false
         };
       case '/cocheras-particulares':
@@ -46,6 +52,7 @@ export const ListadoPage: React.FC = () => {
           title: 'Cocheras Particulares en Alquiler',
           description: 'Cocheras fijas, cubiertas y descubiertas para autos y camionetas en CABA.',
           filterTerm: '',
+          tipoPropiedad: 'cocheras particulares',
           destacada: false
         };
       case '/garages-y-playas':
@@ -53,7 +60,8 @@ export const ListadoPage: React.FC = () => {
           eyebrow: 'GARAGES Y PLAYAS',
           title: 'Garages y Playas de Estacionamiento',
           description: 'Garajes comerciales con renta activa, cocheras en bloque y playas de estacionamiento.',
-          filterTerm: 'Garage',
+          filterTerm: '',
+          tipoPropiedad: 'garage',
           destacada: false
         };
       case '/oficinas':
@@ -61,7 +69,8 @@ export const ListadoPage: React.FC = () => {
           eyebrow: 'OFICINAS Y COMERCIOS',
           title: 'Oficinas con Cochera',
           description: 'Espacios corporativos, locales y oficinas con estacionamiento en zonas exclusivas.',
-          filterTerm: 'Oficina',
+          filterTerm: '',
+          tipoPropiedad: 'oficina',
           destacada: false
         };
       case '/departamentos':
@@ -69,7 +78,8 @@ export const ListadoPage: React.FC = () => {
           eyebrow: 'DEPARTAMENTOS',
           title: 'Departamentos para Inversión',
           description: 'Unidades residenciales e inversiones temporarias con cochera en Buenos Aires.',
-          filterTerm: 'Departamento',
+          filterTerm: '',
+          tipoPropiedad: 'departamento',
           destacada: false
         };
       case '/oportunidades':
@@ -78,7 +88,8 @@ export const ListadoPage: React.FC = () => {
           title: 'Oportunidades Destacadas',
           description: 'Selección de cocheras y propiedades comerciales con alta rentabilidad inmediata.',
           filterTerm: '',
-          destacada: true
+          tipoPropiedad: 'oportunidad',
+          destacada: false
         };
       default:
         return {
@@ -86,6 +97,7 @@ export const ListadoPage: React.FC = () => {
           title: 'Cocheras en Alquiler y Venta',
           description: 'Explorá y filtrá todas las opciones disponibles con información en tiempo real desde WordPress.',
           filterTerm: searchParams.get('search') || '',
+          tipoPropiedad: '',
           destacada: false
         };
     }
@@ -100,6 +112,7 @@ export const ListadoPage: React.FC = () => {
     precioMin: Number(searchParams.get('precioMin')) || 0,
     precioMax: Number(searchParams.get('precioMax')) || 10000000,
     busqueda: searchParams.get('search') || sectionConfig.filterTerm,
+    tipoPropiedad: sectionConfig.tipoPropiedad,
     destacada: searchParams.get('destacada') === 'true' || sectionConfig.destacada,
     orden: (searchParams.get('orden') as any) || 'recientes',
   });
@@ -110,6 +123,7 @@ export const ListadoPage: React.FC = () => {
     setFiltros(prev => ({
       ...prev,
       busqueda: searchParams.get('search') || nextConfig.filterTerm,
+      tipoPropiedad: nextConfig.tipoPropiedad,
       destacada: searchParams.get('destacada') === 'true' || nextConfig.destacada,
       zona: searchParams.get('zona') || 'todas',
       tipo: searchParams.get('tipo') || 'todos',
@@ -172,6 +186,8 @@ export const ListadoPage: React.FC = () => {
       precioMin: 0,
       precioMax: 10000000,
       busqueda: '',
+      // El reset limpia los filtros del usuario, no la sección en la que está.
+      tipoPropiedad: getSectionConfig(location.pathname).tipoPropiedad,
       destacada: false,
       orden: 'recientes',
     };
@@ -278,6 +294,7 @@ export const ListadoPage: React.FC = () => {
             </div>
 
             {/* Filter 4: Rango de Precio */}
+            {MOSTRAR_FILTROS_DE_PRECIO && (
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
@@ -301,6 +318,7 @@ export const ListadoPage: React.FC = () => {
                 <span>$10.000.000</span>
               </div>
             </div>
+            )}
 
             {/* Quick Filter Checkbox: Solo Destacadas */}
             <div className="pt-2 border-t border-slate-100">
@@ -344,8 +362,12 @@ export const ListadoPage: React.FC = () => {
                     className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:border-brand-500"
                   >
                     <option value="recientes">Más recientes</option>
-                    <option value="precio_asc">Precio: Menor a Mayor</option>
-                    <option value="precio_desc">Precio: Mayor a Menor</option>
+                    {MOSTRAR_FILTROS_DE_PRECIO && (
+                      <>
+                        <option value="precio_asc">Precio: Menor a Mayor</option>
+                        <option value="precio_desc">Precio: Mayor a Menor</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
@@ -391,7 +413,7 @@ export const ListadoPage: React.FC = () => {
                 </p>
                 <button
                   onClick={handleResetFiltros}
-                  className="px-5 py-2 bg-brand-600 text-white font-bold text-sm rounded-xl hover:bg-brand-700 transition-colors"
+                  className="btn btn-primary btn-sm text-sm"
                 >
                   Restablecer filtros
                 </button>

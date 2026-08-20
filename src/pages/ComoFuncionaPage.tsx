@@ -82,7 +82,7 @@ export const ComoFuncionaPage: React.FC = () => {
         <div className="text-center">
           <Link
             to="/cocheras"
-            className="inline-flex items-center gap-2 px-8 py-3.5 bg-brand-600 text-white font-bold text-sm rounded-xl hover:bg-brand-700 transition-all shadow-md"
+            className="btn btn-primary btn-lg"
           >
             <span>Explorar Cocheras Disponibles</span>
           </Link>

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Heart, ShieldCheck, Video, KeyRound, Lock, Car, ArrowRight, Sparkles } from 'lucide-react';
+import { MapPin, ShieldCheck, Video, KeyRound, Lock, Car, ArrowRight, Sparkles } from 'lucide-react';
 import { Cochera } from '../../types/cochera';
 
 interface CocheraCardProps {
@@ -9,7 +9,6 @@ interface CocheraCardProps {
 }
 
 export const CocheraCard: React.FC<CocheraCardProps> = ({ cochera, priority = false }) => {
-  const [isFavorite, setIsFavorite] = useState(false);
 
   const getFeatureIcon = (feature: string) => {
     const lower = feature.toLowerCase();
@@ -22,6 +21,13 @@ export const CocheraCard: React.FC<CocheraCardProps> = ({ cochera, priority = fa
 
   const imageSrc = cochera.imagenDestacada || (cochera.imagenes && cochera.imagenes[0]?.url);
 
+  const precioTexto =
+    cochera.consultarPrecio || !cochera.precio || cochera.precio === 0
+      ? 'Consultar Precio'
+      : cochera.moneda === 'USD'
+        ? `U$S ${cochera.precio.toLocaleString('es-AR')}`
+        : `$ ${cochera.precio.toLocaleString('es-AR')}`;
+
   return (
     <div className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:border-brand-500/30 transition-all duration-300 flex flex-col justify-between border border-slate-200/80 relative hover:-translate-y-1">
       
@@ -32,7 +38,7 @@ export const CocheraCard: React.FC<CocheraCardProps> = ({ cochera, priority = fa
             src={imageSrc}
             alt={cochera.titulo}
             loading={priority ? 'eager' : 'lazy'}
-            fetchPriority={priority ? 'high' : 'auto'}
+            {...(priority ? { fetchpriority: 'high' } : {})}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
           />
         ) : (
@@ -69,18 +75,6 @@ export const CocheraCard: React.FC<CocheraCardProps> = ({ cochera, priority = fa
           </span>
         </div>
 
-        {/* Favorite Heart Button */}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsFavorite(!isFavorite);
-          }}
-          aria-label="Guardar a favoritos"
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-950/60 backdrop-blur-md flex items-center justify-center text-white hover:text-red-400 hover:bg-slate-900 transition-all border border-white/20 z-10 cursor-pointer"
-        >
-          <Heart className={`w-4 h-4 transition-colors ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-        </button>
       </div>
 
       {/* Clean Card Body */}
@@ -108,12 +102,21 @@ export const CocheraCard: React.FC<CocheraCardProps> = ({ cochera, priority = fa
           </div>
         </div>
 
-        {/* Feature Chips if present */}
-        {cochera.features && cochera.features.length > 0 && (
+        {/* Tipo de publicación + características reales */}
+        {(cochera.tipoPropiedad.length > 0 || cochera.features.length > 0) && (
           <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
-            {cochera.features.slice(0, 3).map((feature, idx) => (
+            {cochera.tipoPropiedad.slice(0, 1).map((t, idx) => (
               <span
-                key={idx}
+                key={`t-${idx}`}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-brand-50 text-brand-700 text-[11px] font-bold border border-brand-200/70"
+              >
+                <Car className="w-3.5 h-3.5 text-brand-600" />
+                <span>{t}</span>
+              </span>
+            ))}
+            {cochera.features.slice(0, 2).map((feature, idx) => (
+              <span
+                key={`f-${idx}`}
                 className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-slate-50 text-slate-700 text-[11px] font-semibold border border-slate-200/70"
               >
                 {getFeatureIcon(feature)}
@@ -123,10 +126,27 @@ export const CocheraCard: React.FC<CocheraCardProps> = ({ cochera, priority = fa
           </div>
         )}
 
+        {/* Valor publicado — la tarjeta no decía nada del precio y quedaba coja */}
+        <div className="flex items-end justify-between gap-3 pt-3 border-t border-slate-100">
+          <div className="min-w-0">
+            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+              Valor publicado
+            </span>
+            <span className="block text-lg font-extrabold text-brand-600 tracking-tight truncate">
+              {precioTexto}
+            </span>
+          </div>
+          {cochera.disponible && (
+            <span className="flex-shrink-0 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+              Disponible
+            </span>
+          )}
+        </div>
+
         {/* Single Clean Action CTA Button */}
         <Link
           to={`/cocheras/${cochera.slug}`}
-          className="w-full py-3 px-4 bg-slate-900 group-hover:bg-brand-600 text-white font-extrabold text-xs rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 shadow-md group-hover:shadow-brand-600/30 cursor-pointer"
+          className="btn btn-dark btn-block rounded-2xl"
         >
           <span>Ver Cochera</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

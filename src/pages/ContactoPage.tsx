@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Phone, Clock, MapPin, CheckCircle2, Send, MessageCircle, ShieldCheck, Award } from 'lucide-react';
+import { CONTACTO, enviarConsulta } from '../config/contacto';
 
 export const ContactoPage: React.FC = () => {
   const [enviado, setEnviado] = useState(false);
@@ -10,6 +11,18 @@ export const ContactoPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    enviarConsulta(
+      [
+        'Hola! Te escribo desde cocheras.com.ar',
+        '',
+        `Nombre: ${nombre}`,
+        `Email: ${email}`,
+        `Teléfono: ${telefono}`,
+        '',
+        'Consulta:',
+        mensaje,
+      ].join('\n')
+    );
     setEnviado(true);
   };
 
@@ -81,25 +94,45 @@ export const ContactoPage: React.FC = () => {
 
             <div className="pt-4 border-t border-white/10 text-xs text-slate-400 space-y-1">
               <p className="font-semibold text-white">Matrículas Profesionales:</p>
-              <p>Esteban Sucari — Matrícula CUCICBA 6610 / CMPCSI 6068</p>
+              <p>Matrícula CUCICBA 6610 / CMPCSI 6068</p>
             </div>
           </div>
 
           {/* Form */}
           <div className="lg:col-span-7 bg-white p-8 rounded-card border border-slate-200 shadow-sm">
             {enviado ? (
-              <div className="p-8 text-center space-y-3">
+              <div className="p-8 text-center space-y-4">
                 <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
-                <h3 className="text-xl font-bold text-slate-900">¡Mensaje Recibido!</h3>
-                <p className="text-xs text-slate-600">Nos pondremos en contacto con vos a la brevedad.</p>
+                <h3 className="text-xl font-bold text-slate-900">Tu consulta está lista</h3>
+                <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
+                  Te abrimos WhatsApp con el mensaje redactado. Tocá enviar y te respondemos a la brevedad.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-1">
+                  <a
+                    href={`https://wa.me/${CONTACTO.whatsapp}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-whatsapp btn-sm w-full sm:w-auto px-5 py-2.5"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>No se abrió WhatsApp</span>
+                  </a>
+                  <button
+                    onClick={() => setEnviado(false)}
+                    className="btn btn-outline btn-sm w-full sm:w-auto px-5 py-2.5"
+                  >
+                    Escribir otra consulta
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <h3 className="font-bold text-slate-900 text-lg border-b pb-2">Envianos una Consulta</h3>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Nombre Completo</label>
+                  <label htmlFor="contacto-nombre-completo" className="block text-xs font-bold text-slate-700 uppercase mb-1">Nombre Completo</label>
                   <input
+                    id="contacto-nombre-completo"
                     type="text"
                     placeholder="Tu nombre y apellido"
                     value={nombre}
@@ -111,8 +144,9 @@ export const ContactoPage: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Email</label>
+                    <label htmlFor="contacto-email" className="block text-xs font-bold text-slate-700 uppercase mb-1">Email</label>
                     <input
+                    id="contacto-email"
                       type="email"
                       placeholder="tu@email.com"
                       value={email}
@@ -122,8 +156,9 @@ export const ContactoPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Teléfono / WhatsApp</label>
+                    <label htmlFor="contacto-telefono-whatsapp" className="block text-xs font-bold text-slate-700 uppercase mb-1">Teléfono / WhatsApp</label>
                     <input
+                    id="contacto-telefono-whatsapp"
                       type="tel"
                       placeholder="Ej: 11 4997 3559"
                       value={telefono}
@@ -135,8 +170,9 @@ export const ContactoPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Mensaje o Detalle de Búsqueda</label>
+                  <label htmlFor="contacto-mensaje-o-detalle-de-busqueda" className="block text-xs font-bold text-slate-700 uppercase mb-1">Mensaje o Detalle de Búsqueda</label>
                   <textarea
+                    id="contacto-mensaje-o-detalle-de-busqueda"
                     rows={4}
                     placeholder="Contanos en qué zona estás buscando cochera o qué tipo de inversión te interesa..."
                     value={mensaje}
@@ -148,7 +184,7 @@ export const ContactoPage: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                  className="btn btn-primary btn-block text-sm"
                 >
                   <Send className="w-4 h-4" />
                   <span>Enviar Consulta</span>

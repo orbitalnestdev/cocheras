@@ -2,7 +2,25 @@ import React from 'react';
 import { Newspaper, ExternalLink, Calendar, ArrowRight, Share2, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+/**
+ * Una URL sirve como enlace a la nota sólo si apunta a un artículo concreto.
+ * Las que hay cargadas hoy son las portadas de los medios
+ * (lanacion.com.ar, infobae.com…), así que el botón "Leer nota completa en X"
+ * prometía un artículo y dejaba al lector en la home del diario.
+ * Al cargar la URL real de cada nota, el enlace vuelve a aparecer solo.
+ */
+const esEnlaceDeNota = (url?: string): boolean => {
+  if (!url) return false;
+  try {
+    return new URL(url).pathname.replace(/\/+$/, '').length > 1;
+  } catch {
+    return false;
+  }
+};
+
 export const PrensaPage: React.FC = () => {
+  // TODO: reemplazar por las URLs reales de cada nota. Mientras apunten a la
+  // portada del medio, la tarjeta no ofrece el enlace (ver `esEnlaceDeNota`).
   const articulosPrensa = [
     {
       id: 1,
@@ -102,15 +120,21 @@ export const PrensaPage: React.FC = () => {
               </div>
 
               <div className="p-6 pt-0">
-                <a
-                  href={art.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 text-xs font-extrabold text-brand-600 hover:text-brand-700 transition-colors"
-                >
-                  <span>Leer nota completa en {art.medio}</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
+                {esEnlaceDeNota(art.url) ? (
+                  <a
+                    href={art.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 text-xs font-extrabold text-brand-600 hover:text-brand-700 transition-colors"
+                  >
+                    <span>Leer nota completa en {art.medio}</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                ) : (
+                  <span className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400">
+                    Publicado en {art.medio}
+                  </span>
+                )}
               </div>
             </div>
           ))}

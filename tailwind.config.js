@@ -18,10 +18,21 @@ export default {
           100: '#EBECEF',
           200: '#D5D8DF',
         },
+        // La escala tenía sólo 500/600/700, pero el código usa brand-50, 200,
+        // 300 y 400 en ~29 lugares: esas clases no se generaban y el color
+        // simplemente no se aplicaba (la píldora del hero y los íconos de los
+        // sellos quedaban blancos/grises en vez de azules).
         brand: {
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          200: '#BFDBFE',
+          300: '#93C5FD',
+          400: '#60A5FA',
           500: '#3B82F6',
           600: '#2563EB',
           700: '#1D4ED8',
+          800: '#1E40AF',
+          900: '#1E3A8A',
         },
         violet: {
           500: '#A855F7',
