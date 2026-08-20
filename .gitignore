@@ -14,6 +14,12 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Variables de entorno (contienen WP_APP_USER / WP_APP_PASSWORD)
+.env
+.env.local
+.env.*.local
+!.env.example
+
 # Editor & OS files
 .DS_Store
 *.suo
