@@ -22,7 +22,7 @@ import {
 import { CocheraCard } from '../components/cocheras/CocheraCard';
 import { InteractiveMap } from '../components/cocheras/InteractiveMap';
 import { WordPressService } from '../services/wordpressService';
-import { Cochera } from '../types/cochera';
+import { Cochera, esCochera } from '../types/cochera';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -41,8 +41,14 @@ export const HomePage: React.FC = () => {
     try {
       const dataAll = await WordPressService.getCocheras();
       setTodasCocheras(dataAll);
-      const destacadas = dataAll.filter(c => c.destacada);
-      setCocherasDestacadas(destacadas.length > 0 ? destacadas : dataAll.slice(0, 6));
+
+      // La sección se titula "Cocheras Destacadas": no puede listar departamentos
+      // ni oficinas. Sólo hay 5 publicaciones marcadas como destacadas, así que
+      // completamos la grilla con el resto de las cocheras del catálogo.
+      const soloCocheras = dataAll.filter(esCochera);
+      const destacadas = soloCocheras.filter(c => c.destacada);
+      const resto = soloCocheras.filter(c => !c.destacada);
+      setCocherasDestacadas([...destacadas, ...resto].slice(0, 6));
     } catch (err: any) {
       console.error('Error loading properties on Home:', err);
       setError('No se pudieron obtener las propiedades de WordPress REST API.');
@@ -69,136 +75,122 @@ export const HomePage: React.FC = () => {
       {/* ========================================================================= */}
       {/* 1. HERO SECTION WITH FUNCTIONAL REAL SEARCH */}
       {/* ========================================================================= */}
-      <section className="relative bg-ink-950 text-white pt-28 pb-16 lg:pt-36 lg:pb-24 overflow-hidden flex items-center">
-        
+      <section className="relative bg-ink-950 text-white pt-20 pb-16 sm:pb-20 lg:pt-24 lg:pb-24 overflow-hidden">
+
         {/* Background Image & Overlay */}
         <div className="absolute inset-0 z-0">
-          <img
-            src="/img/hero-bg.jpg"
-            alt="Fondo Cochera Premium"
-            className="w-full h-full object-cover object-center brightness-[0.35] contrast-[1.1] scale-105 animate-pulse-slow"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/85 to-slate-950/60" />
-          <div className="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:24px_24px] opacity-15" />
+          {/* WebP con fallback a JPG: el original pesaba 774 kB y es lo primero
+              que descarga la home. En WebP son 79 kB (-90%). */}
+          <picture>
+            <source srcSet="/img/hero-bg.webp" type="image/webp" />
+            <img
+              src="/img/hero-bg.jpg"
+              alt="Fondo Cochera Premium"
+              {...{ fetchpriority: 'high' }}
+              className="w-full h-full object-cover object-center brightness-[0.3] contrast-[1.1] scale-105"
+            />
+          </picture>
+          <div className="absolute inset-0 bg-slate-950/70" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/40 to-slate-950/95" />
+          <div className="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:24px_24px] opacity-10" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            
-            {/* Left Content */}
-            <div className="lg:col-span-7 space-y-6">
-              
-              {/* Status Pill with Real WP Count */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-600/20 border border-brand-500/30 backdrop-blur-md">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                <span className="text-xs font-bold text-brand-300">
-                  {loading ? 'Cargando catálogo oficial...' : `${todasCocheras.length} Cocheras Publicadas en Vivo`}
-                </span>
-              </div>
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center">
+          <div className="space-y-5">
 
-              {/* Main Headline */}
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.1]">
-                Encontrá tu cochera en CABA,<br />
-                <span className="text-gradient">con la información real.</span>
-              </h1>
-
-              {/* Subtitle */}
-              <p className="text-base sm:text-lg text-slate-300 max-w-xl font-normal leading-relaxed">
-                Comercialización y alquiler directo por <strong>Esteban Sucari</strong> (Mat. CUCICBA 6610 / CMPCSI 6068). Cocheras fijas, garajes comerciales y emprendimientos en Buenos Aires.
-              </p>
-
-              {/* Search Bar Container */}
-              <div className="pt-2">
-                <form
-                  onSubmit={handleSearchSubmit}
-                  className="bg-white p-2.5 rounded-2xl shadow-2xl flex flex-col sm:flex-row items-center gap-2 border border-slate-200"
-                >
-                  {/* Location Input */}
-                  <div className="relative flex-1 w-full flex items-center px-3 border-b sm:border-b-0 sm:border-r border-slate-200 py-2 sm:py-0">
-                    <MapPin className="w-5 h-5 text-brand-600 flex-shrink-0 mr-2.5" />
-                    <input
-                      type="text"
-                      placeholder="Barrio o dirección (ej: Recoleta, Palermo)"
-                      value={searchZona}
-                      onChange={(e) => setSearchZona(e.target.value)}
-                      className="w-full bg-transparent text-slate-900 placeholder-slate-400 text-sm font-medium focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Type Selector */}
-                  <div className="relative w-full sm:w-48 flex items-center px-3 py-2 sm:py-0">
-                    <Car className="w-5 h-5 text-brand-600 flex-shrink-0 mr-2.5" />
-                    <select
-                      value={searchTipo}
-                      onChange={(e) => setSearchTipo(e.target.value)}
-                      className="w-full bg-transparent text-slate-900 text-sm font-medium focus:outline-none cursor-pointer"
-                    >
-                      <option value="todos">Todos los tipos</option>
-                      <option value="cubierta">Cubierta</option>
-                      <option value="descubierta">Descubierta</option>
-                    </select>
-                  </div>
-
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    className="w-full sm:w-auto px-7 py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm rounded-xl transition-all shadow-md flex items-center justify-center gap-2 group cursor-pointer"
-                  >
-                    <Search className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                    <span>Buscar</span>
-                  </button>
-                </form>
-
-                {/* Quick Trust Badges below search */}
-                <div className="flex flex-wrap items-center gap-6 mt-4 text-xs font-medium text-slate-400">
-                  <span className="flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-brand-400" />
-                    Matrícula CUCICBA 6610
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Zap className="w-4 h-4 text-brand-400" />
-                    Búsqueda en tiempo real
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-brand-400" />
-                    Datos 100% matcheados
-                  </span>
-                </div>
-              </div>
-
+            {/* Status Pill with Real WP Count */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-600/20 border border-brand-500/30 backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              <span className="text-xs font-bold text-brand-300">
+                {loading ? 'Cargando catálogo oficial...' : `${todasCocheras.length} Cocheras Publicadas en Vivo`}
+              </span>
             </div>
 
-            {/* Right Side: Agent Verified Card */}
-            <div className="lg:col-span-5 flex justify-center lg:justify-end">
-              <div className="bg-slate-900/90 backdrop-blur-xl p-6 sm:p-7 rounded-3xl border border-slate-800 shadow-2xl space-y-5 max-w-sm w-full">
-                <div className="flex items-center gap-4 border-b border-slate-800 pb-4">
-                  <div className="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center font-black text-xl flex-shrink-0 shadow-lg">
-                    Ec
-                  </div>
-                  <div>
-                    <h3 className="font-extrabold text-white text-base">Esteban Sucari</h3>
-                    <p className="text-xs text-brand-400 font-semibold">Cocheras.com.ar • Matrícula 6610</p>
-                  </div>
-                </div>
+            {/* Main Headline */}
+            <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-white tracking-tight leading-[1.15]">
+              Encontrá tu cochera <span className="text-gradient">ideal</span>
+            </h1>
 
-                <div className="space-y-2 text-xs text-slate-300">
-                  <p className="leading-relaxed">
-                    Especialistas en comercialización y gestión de plazas de estacionamiento, garajes comerciales y proyectos de inversión en Buenos Aires.
-                  </p>
-                </div>
+            {/* Subtitle */}
+            <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto font-normal leading-relaxed">
+              Segura, cerca tuyo y al mejor precio del mercado.
+            </p>
 
-                <div className="pt-2 space-y-2">
-                  <a
-                    href="https://wa.me/5491136920920?text=Hola,%20quisiera%20consultar%20por%20cocheras%20disponibles"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Consulta Directa por WhatsApp</span>
-                  </a>
-                </div>
+            {/* Search Bar */}
+            <form
+              onSubmit={handleSearchSubmit}
+              className="bg-white p-2.5 rounded-2xl shadow-2xl flex flex-col sm:flex-row items-center gap-2 border border-slate-200 max-w-3xl mx-auto"
+            >
+              {/* Location Input */}
+              <div className="relative flex-1 w-full flex items-center px-3 border-b sm:border-b-0 sm:border-r border-slate-200 py-2 sm:py-0">
+                <MapPin className="w-5 h-5 text-brand-600 flex-shrink-0 mr-2.5" />
+                <input
+                  type="text"
+                  placeholder="Barrio o dirección (ej: Recoleta, Palermo)"
+                  value={searchZona}
+                  onChange={(e) => setSearchZona(e.target.value)}
+                  className="w-full bg-transparent text-slate-900 placeholder-slate-400 text-sm font-medium focus:outline-none"
+                />
               </div>
+
+              {/* Type Selector */}
+              <div className="relative w-full sm:w-48 flex items-center px-3 py-2 sm:py-0">
+                <Car className="w-5 h-5 text-brand-600 flex-shrink-0 mr-2.5" />
+                <select
+                  value={searchTipo}
+                  onChange={(e) => setSearchTipo(e.target.value)}
+                  className="w-full bg-transparent text-slate-900 text-sm font-medium focus:outline-none cursor-pointer"
+                >
+                  <option value="todos">Todos los tipos</option>
+                  <option value="cubierta">Cubierta</option>
+                  <option value="descubierta">Descubierta</option>
+                </select>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="btn btn-primary w-full sm:w-auto text-sm group"
+              >
+                <Search className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span>Buscar</span>
+              </button>
+            </form>
+
+            {/* WhatsApp CTA sólo mobile (en desktop va en la fila de badges) */}
+            <a
+              href="https://wa.me/5491136920920?text=Hola,%20quisiera%20consultar%20por%20cocheras%20disponibles"
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-whatsapp btn-block sm:hidden mx-auto max-w-sm"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>Consulta directa por WhatsApp</span>
+            </a>
+
+            {/* Quick Trust Badges + WhatsApp direct line */}
+            <div className="hidden sm:flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-slate-400">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-brand-400" />
+                Matrícula CUCICBA 6610
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-brand-400" />
+                Búsqueda en tiempo real
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-brand-400" />
+                Datos 100% matcheados
+              </span>
+              <a
+                href="https://wa.me/5491136920920?text=Hola,%20quisiera%20consultar%20por%20cocheras%20disponibles"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 font-bold text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Consulta directa por WhatsApp</span>
+              </a>
             </div>
 
           </div>
@@ -206,25 +198,11 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* 2. MAPA INTERACTIVO (MISMA FUENTE DE DATOS) */}
+      {/* 2. MAPA INTERACTIVO — visible sin scrollear, montado sobre el hero */}
       {/* ========================================================================= */}
-      <section className="py-12 bg-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-              <span className="text-xs font-extrabold uppercase tracking-widest text-brand-600 block mb-1">
-                EXPLORACIÓN GEOGRÁFICA
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                Mapa de Cocheras en CABA
-              </h2>
-            </div>
-            <p className="text-xs text-slate-500 font-medium">
-              Mostrando ubicación geográfica real de propiedades en la Ciudad de Buenos Aires.
-            </p>
-          </div>
-
-          <InteractiveMap cocheras={todasCocheras} />
+      <section className="relative z-10 -mt-10 sm:-mt-12 lg:-mt-14 pb-12 lg:pb-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <InteractiveMap cocheras={todasCocheras} loading={loading} error={error} />
         </div>
       </section>
 
@@ -269,7 +247,7 @@ export const HomePage: React.FC = () => {
               <p className="text-xs text-red-700">{error}</p>
               <button
                 onClick={loadCocheras}
-                className="px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-lg shadow-xs hover:bg-red-700 transition-all"
+                className="btn btn-sm bg-red-600 text-white hover:bg-red-700"
               >
                 Reintentar
               </button>
@@ -281,8 +259,8 @@ export const HomePage: React.FC = () => {
             <>
               {cocherasDestacadas.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                  {cocherasDestacadas.slice(0, 6).map((cochera) => (
-                    <CocheraCard key={cochera.id} cochera={cochera} />
+                  {cocherasDestacadas.slice(0, 6).map((cochera, idx) => (
+                    <CocheraCard key={cochera.id} cochera={cochera} priority={idx < 3} />
                   ))}
                 </div>
               ) : (
@@ -355,14 +333,14 @@ export const HomePage: React.FC = () => {
                 ¿Querés alquilar o publicar tu cochera en CABA?
               </h2>
               <p className="text-white/90 text-xs sm:text-sm max-w-xl font-medium">
-                Asesoramiento profesional respaldado por Esteban Sucari (Mat. CUCICBA 6610).
+                Asesoramiento profesional de un equipo matriculado (Mat. CUCICBA 6610).
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 to="/cocheras"
-                className="px-6 py-3.5 bg-white text-slate-900 font-extrabold text-xs rounded-xl shadow-lg hover:bg-slate-100 transition-all"
+                className="btn btn-white"
               >
                 Ver Todas las Cocheras
               </Link>
@@ -370,7 +348,7 @@ export const HomePage: React.FC = () => {
                 href="https://wa.me/5491136920920?text=Hola,%20quisiera%20consultar%20por%20asesoramiento"
                 target="_blank"
                 rel="noreferrer"
-                className="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-lg transition-all flex items-center gap-2"
+                className="btn btn-whatsapp"
               >
                 <MessageCircle className="w-4 h-4" />
                 <span>Escribir por WhatsApp</span>

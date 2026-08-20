@@ -1,6 +1,8 @@
 import { Cochera, FiltrosCochera, WPApiConfig } from '../types/cochera';
 
-const DEFAULT_WP_URL = 'https://www.cocheras.com.ar/wp-json';
+// La URL sale de VITE_WP_API_BASE (.env). Antes estaba hardcodeada y la variable
+// documentada en .env.example no se leía en ningún lado.
+const DEFAULT_WP_URL = import.meta.env.VITE_WP_API_BASE || 'https://www.cocheras.com.ar/wp-json';
 
 let apiConfig: WPApiConfig = {
   baseUrl: localStorage.getItem('cocheras_wp_url') || DEFAULT_WP_URL,
@@ -298,6 +300,7 @@ export class WordPressService {
       let tipo: 'cubierta' | 'descubierta' = 'cubierta';
       let statusProperty: string | undefined = undefined;
       const extractedFeatures: string[] = [];
+      const extractedTypes: string[] = [];
 
       if (raw._embedded && raw._embedded['wp:term']) {
         const termsArray = raw._embedded['wp:term'];
@@ -313,10 +316,19 @@ export class WordPressService {
               if (t.slug?.includes('descubierta')) {
                 tipo = 'descubierta';
               }
+              // `property-type` es el tipo de publicación (Cocheras, Departamentos,
+              // Oficina…), no una característica. Antes se metía en el mismo array
+              // que las amenities y por eso la home mostraba "Departamentos" como
+              // si fuera un feature de la cochera.
+              if (t.taxonomy === 'property-type') {
+                if (t.name && !extractedTypes.includes(t.name)) {
+                  extractedTypes.push(cleanHtml(t.name));
+                }
+              }
+
               if (
                 t.taxonomy === 'property-feature' ||
-                t.taxonomy === 'caracteristica-propiedad' ||
-                t.taxonomy === 'property-type'
+                t.taxonomy === 'caracteristica-propiedad'
               ) {
                 if (t.name && !extractedFeatures.includes(t.name)) {
                   extractedFeatures.push(cleanHtml(t.name));
@@ -460,6 +472,7 @@ export class WordPressService {
         periodo: 'mes',
         tipo: tipo,
         features: extractedFeatures,
+        tipoPropiedad: extractedTypes,
         destacada: destacada,
         disponible: true,
         imagenDestacada: mainImg,
@@ -469,7 +482,11 @@ export class WordPressService {
         lat: lat,
         lng: lng,
         statusProperty: statusProperty,
-        codigoRef: meta.REAL_HOMES_property_id || undefined,
+        // WordPress devuelve ids del tipo "RH-12871-PROPERTY": el sufijo es ruido
+        // del CPT y se veía tal cual en la tarjeta.
+        codigoRef: meta.REAL_HOMES_property_id
+          ? String(meta.REAL_HOMES_property_id).replace(/-property$/i, '')
+          : undefined,
         fechaPublicacion: raw.date ? new Date(raw.date).toLocaleDateString('es-AR') : undefined,
         contacto: {
           telefono: '+54 11 4997-3559',
@@ -504,6 +521,11 @@ export class WordPressService {
       result = result.filter(c => c.tipo === filtros.tipo);
     }
 
+    if (filtros.tipoPropiedad) {
+      const tp = filtros.tipoPropiedad.toLowerCase();
+      result = result.filter(c => c.tipoPropiedad.some(t => t.toLowerCase().includes(tp)));
+    }
+
     if (filtros.destacada) {
       result = result.filter(c => c.destacada);
     }
@@ -518,12 +540,16 @@ export class WordPressService {
       );
     }
 
+    // Las publicaciones sin precio informado NO se descartan: no se puede excluir
+    // algo por un dato que no existe. Antes el tope por defecto ($10.000.000)
+    // borraba silenciosamente las 26 publicaciones sin precio y el listado
+    // mostraba "217 cocheras" cuando el catálogo tiene 243.
     if (filtros.precioMin !== undefined && filtros.precioMin > 0) {
-      result = result.filter(c => c.precio !== undefined && c.precio >= filtros.precioMin!);
+      result = result.filter(c => c.precio === undefined || c.precio >= filtros.precioMin!);
     }
 
     if (filtros.precioMax !== undefined && filtros.precioMax > 0) {
-      result = result.filter(c => c.precio !== undefined && c.precio <= filtros.precioMax!);
+      result = result.filter(c => c.precio === undefined || c.precio <= filtros.precioMax!);
     }
 
     if (filtros.orden) {

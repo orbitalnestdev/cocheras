@@ -198,10 +198,11 @@ export const Header: React.FC = () => {
 
             {/* Right Action: Replaced Publicar Cochera with Contacto CTA Button */}
             <div className="hidden md:flex items-center gap-2.5 flex-shrink-0">
-              {/* Discrete WP Status Icon */}
+              {/* Discrete WP Status Icon — sólo en desarrollo, no es un control de cara al público */}
               <button
                 onClick={() => setWpModalOpen(true)}
-                className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                aria-label={`Estado de la API de WordPress: ${wpStatus}`}
+                className={`p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors ${import.meta.env.DEV ? '' : 'hidden'}`}
                 title={`Estado WP API: ${wpStatus}`}
               >
                 <Database className={`w-4 h-4 ${wpStatus === 'connected' ? 'text-emerald-400' : 'text-amber-400'}`} />
@@ -210,7 +211,7 @@ export const Header: React.FC = () => {
               {/* Primary CTA Button: Contacto */}
               <Link
                 to="/contacto"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold text-white bg-gradient-brand hover:brightness-110 transition-all shadow-md hover:shadow-brand-600/30 whitespace-nowrap cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                className="btn btn-primary btn-sm px-4 py-2.5 text-xs"
               >
                 <Phone className="w-4 h-4" />
                 <span>Contacto</span>

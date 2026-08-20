@@ -1,13 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
 import { Cochera } from '../../types/cochera';
-import { MapPin, ArrowRight, MessageCircle, ExternalLink, Navigation, CheckCircle2 } from 'lucide-react';
+import { MapPin, ArrowRight, MessageCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface InteractiveMapProps {
   cocheras: Cochera[];
   onSelectCochera?: (cochera: Cochera) => void;
+  loading?: boolean;
+  error?: string | null;
 }
 
 // Custom SVG Pin Icon for Leaflet
@@ -67,16 +71,71 @@ const createCustomIcon = (isFeatured: boolean, isSelected: boolean) => {
   });
 };
 
-export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSelectCochera }) => {
+// Burbuja de agrupación. Sin esto, las 243 chinches se superponen y el mapa
+// se ve como una mancha negra sobre Palermo/Recoleta.
+const createClusterIcon = (cluster: L.MarkerCluster) => {
+  const count = cluster.getChildCount();
+  const hasFeatured = cluster.getAllChildMarkers().some((m: any) => m.destacada);
+  const size = count < 10 ? 40 : count < 50 ? 48 : 58;
+  const bg = hasFeatured ? '#F59E0B' : '#0F172A';
+  const glow = hasFeatured ? 'rgba(245,158,11,0.45)' : 'rgba(15,23,42,0.4)';
+  const fg = hasFeatured ? '#0F172A' : '#FFFFFF';
+
+  return L.divIcon({
+    html: `
+      <div style="
+        width:${size}px;
+        height:${size}px;
+        border-radius:50%;
+        background:${bg};
+        border:3px solid #FFFFFF;
+        color:${fg};
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-weight:800;
+        font-size:${count < 100 ? 14 : 12}px;
+        letter-spacing:-0.02em;
+        box-shadow:0 6px 18px ${glow};
+      ">${count}</div>
+    `,
+    className: 'custom-cluster-marker',
+    iconSize: L.point(size, size),
+  });
+};
+
+export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSelectCochera, loading = false, error = null }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<{ [key: string]: L.Marker }>({});
+  const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
+  // Id del marcador resaltado. Vive en un ref para que la selección no forme
+  // parte de las dependencias del efecto que construye los marcadores.
+  const selectedIdRef = useRef<string | null>(null);
+  const onSelectRef = useRef(onSelectCochera);
+  onSelectRef.current = onSelectCochera;
   
   const [selectedCochera, setSelectedCochera] = useState<Cochera | null>(cocheras[0] || null);
   const [activeZone, setActiveZone] = useState<string>('todas');
 
   const zonasDisponibles = ['todas', 'Palermo', 'Recoleta', 'Belgrano', 'Monserrat', 'Microcentro'];
 
+  // Al desmontar hay que destruir la instancia de Leaflet: si no, quedan
+  // colgados sus listeners globales (resize, focus) por cada visita a la home.
+  useEffect(() => {
+    return () => {
+      mapInstanceRef.current?.remove();
+      mapInstanceRef.current = null;
+      clusterRef.current = null;
+      markersRef.current = {};
+      selectedIdRef.current = null;
+    };
+  }, []);
+
+  // Efecto 1 — construye los marcadores.
+  // Deliberadamente NO depende de `selectedCochera`: si dependiera, cada clic en
+  // un pin borraría y recrearía los 243 marcadores (y volvería a hacer fitBounds,
+  // peleándole el encuadre al usuario).
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -100,8 +159,19 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
 
     const map = mapInstanceRef.current;
 
+    if (!clusterRef.current) {
+      clusterRef.current = L.markerClusterGroup({
+        iconCreateFunction: createClusterIcon,
+        showCoverageOnHover: false,
+        spiderfyOnMaxZoom: true,
+        maxClusterRadius: 55,
+        disableClusteringAtZoom: 17,
+      });
+      map.addLayer(clusterRef.current);
+    }
+
     // Clear existing markers
-    Object.values(markersRef.current).forEach((m) => m.remove());
+    clusterRef.current.clearLayers();
     markersRef.current = {};
 
     // Filter cocheras by zone if selected
@@ -112,21 +182,17 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
     // Filter properties that have valid lat/lng coordinates for map rendering
     const withCoords = filtered.filter(item => item.lat !== undefined && item.lng !== undefined);
 
-    if (withCoords.length > 0 && !selectedCochera) {
-      setSelectedCochera(withCoords[0]);
-    } else if (filtered.length > 0 && !selectedCochera) {
-      setSelectedCochera(filtered[0]);
-    }
-
     // Add markers only for properties with real coordinates
     withCoords.forEach((item) => {
       const lat = item.lat!;
       const lng = item.lng!;
+      const id = String(item.id);
 
-      const isSelected = selectedCochera?.id === item.id;
-      const icon = createCustomIcon(Boolean(item.destacada), isSelected);
+      const icon = createCustomIcon(Boolean(item.destacada), selectedIdRef.current === id);
 
-      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      const marker = L.marker([lat, lng], { icon });
+      (marker as any).destacada = Boolean(item.destacada);
+      clusterRef.current!.addLayer(marker);
 
       // Popup Content
       const imgMarkup = item.imagenDestacada
@@ -152,10 +218,10 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
 
       marker.on('click', () => {
         setSelectedCochera(item);
-        if (onSelectCochera) onSelectCochera(item);
+        if (onSelectRef.current) onSelectRef.current(item);
       });
 
-      markersRef.current[String(item.id)] = marker;
+      markersRef.current[id] = marker;
     });
 
     // Adjust view if zone filter changes and we have valid coords
@@ -164,7 +230,38 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
     }
 
-  }, [cocheras, activeZone, selectedCochera]);
+  }, [cocheras, activeZone]);
+
+  // Efecto 2 — al llegar los datos, deja seleccionada la primera ficha si todavía
+  // no hay ninguna (o si la que había ya no existe en el catálogo).
+  useEffect(() => {
+    if (cocheras.length === 0) return;
+    setSelectedCochera((prev) => {
+      if (prev && cocheras.some(c => c.id === prev.id)) return prev;
+      return cocheras.find(c => c.lat !== undefined && c.lng !== undefined) || cocheras[0];
+    });
+  }, [cocheras]);
+
+  // Efecto 3 — repinta únicamente los dos marcadores afectados por el cambio de
+  // selección, en lugar de reconstruir la capa entera.
+  useEffect(() => {
+    const nextId = selectedCochera ? String(selectedCochera.id) : null;
+    const prevId = selectedIdRef.current;
+    if (prevId === nextId) return;
+
+    if (prevId && markersRef.current[prevId]) {
+      const prevItem = cocheras.find(c => String(c.id) === prevId);
+      if (prevItem) {
+        markersRef.current[prevId].setIcon(createCustomIcon(Boolean(prevItem.destacada), false));
+      }
+    }
+
+    if (nextId && selectedCochera && markersRef.current[nextId]) {
+      markersRef.current[nextId].setIcon(createCustomIcon(Boolean(selectedCochera.destacada), true));
+    }
+
+    selectedIdRef.current = nextId;
+  }, [selectedCochera, cocheras]);
 
   const handleZoneFilter = (zone: string) => {
     setActiveZone(zone);
@@ -184,27 +281,27 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
   };
 
   return (
-    <div className="bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200">
+    <div className="bg-white rounded-3xl overflow-hidden border border-slate-200 ring-1 ring-white/20 shadow-[0_28px_70px_-15px_rgba(2,6,23,0.65)]">
       
       {/* Map Filter Tabs Top Bar */}
-      <div className="p-4 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-3 border-b border-slate-800">
+      <div className="p-3 sm:p-4 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-2 sm:gap-3 border-b border-slate-800">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white">
             <MapPin className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-extrabold text-sm text-white leading-tight">Mapa Interactivo de Cocheras en CABA</h3>
+            <h2 className="font-extrabold text-sm text-white leading-tight">Mapa Interactivo de Cocheras en CABA</h2>
             <p className="text-[11px] text-muted-dark">Ubicación real de cada propiedad en Buenos Aires</p>
           </div>
         </div>
 
         {/* Zone Buttons */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto max-w-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {zonasDisponibles.map((zone) => (
             <button
               key={zone}
               onClick={() => handleZoneFilter(zone)}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap flex-shrink-0 ${
                 activeZone === zone
                   ? 'bg-brand-600 text-white shadow-md'
                   : 'bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white'
@@ -217,17 +314,42 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
       </div>
 
       {/* Main Map Body Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[500px]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[460px]">
         
         {/* Leaflet Map Canvas */}
-        <div className="lg:col-span-8 relative h-[380px] sm:h-[480px] lg:h-full w-full z-0">
+        <div className="lg:col-span-8 relative h-[340px] sm:h-[420px] lg:h-full w-full z-0">
           <div ref={mapContainerRef} className="w-full h-full" />
-          
+
+          {/* Estado de carga / error: sin esto el mapa quedaba mudo y vacío */}
+          {(loading || error || cocheras.length === 0) && (
+            <div className="absolute inset-0 z-[500] bg-slate-100/95 backdrop-blur-sm flex flex-col items-center justify-center gap-3 text-center px-6">
+              {error ? (
+                <>
+                  <AlertTriangle className="w-9 h-9 text-red-500" />
+                  <p className="text-sm font-bold text-slate-800">No pudimos cargar el mapa</p>
+                  <p className="text-xs text-slate-500 max-w-xs">{error}</p>
+                </>
+              ) : loading ? (
+                <>
+                  <Loader2 className="w-8 h-8 text-brand-600 animate-spin" />
+                  <p className="text-xs font-semibold text-slate-600">Ubicando las cocheras publicadas…</p>
+                </>
+              ) : (
+                <>
+                  <MapPin className="w-9 h-9 text-slate-300" />
+                  <p className="text-xs font-semibold text-slate-500">No hay cocheras publicadas para mostrar en el mapa.</p>
+                </>
+              )}
+            </div>
+          )}
+
           {/* Map Overlay Badge */}
-          <div className="absolute top-3 left-3 z-[400] bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-slate-200 text-xs font-bold text-slate-800 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-            <span>{cocheras.length} cocheras en mapa</span>
-          </div>
+          {!loading && !error && cocheras.length > 0 && (
+            <div className="absolute top-3 right-3 z-[400] bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-slate-200 text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              <span>{cocheras.length} cocheras en mapa</span>
+            </div>
+          )}
         </div>
 
         {/* Selected Cochera Lead Capture Card (Right Side) */}
@@ -237,7 +359,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
             <div className="space-y-4 flex-1 flex flex-col justify-between">
               
               <div className="space-y-3">
-                <div className="relative aspect-[16/10] rounded-2xl overflow-hidden shadow-md bg-slate-200">
+                <div className="relative h-44 sm:h-56 lg:h-auto lg:aspect-[16/10] rounded-2xl overflow-hidden shadow-md bg-slate-200">
                   <img
                     src={selectedCochera.imagenDestacada}
                     alt={selectedCochera.titulo}
@@ -265,8 +387,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
 
                 {/* Features chips */}
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  {selectedCochera.features.slice(0, 3).map((f, i) => (
-                    <span key={i} className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[11px] font-semibold text-slate-700">
+                  {selectedCochera.tipoPropiedad.slice(0, 1).map((t, i) => (
+                    <span key={`t-${i}`} className="px-2 py-0.5 rounded-md bg-brand-50 border border-brand-200/70 text-[11px] font-bold text-brand-700">
+                      {t}
+                    </span>
+                  ))}
+                  {selectedCochera.features.slice(0, 2).map((f, i) => (
+                    <span key={`f-${i}`} className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[11px] font-semibold text-slate-700">
                       ✓ {f}
                     </span>
                   ))}
@@ -297,7 +424,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
                   )}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-md"
+                  className="btn btn-whatsapp btn-block"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Consultar por WhatsApp ahora</span>
@@ -305,7 +432,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
 
                 <Link
                   to={`/cocheras/${selectedCochera.slug}`}
-                  className="w-full py-2.5 px-4 bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all"
+                  className="btn btn-outline btn-block py-2.5"
                 >
                   <span>Ver Ficha Completa</span>
                   <ArrowRight className="w-3.5 h-3.5" />

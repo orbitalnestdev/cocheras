@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Car, Upload, CheckCircle2, ShieldCheck, MapPin, DollarSign, ArrowRight } from 'lucide-react';
+import { Car, Upload, CheckCircle2, ShieldCheck, MapPin, DollarSign, ArrowRight, MessageCircle } from 'lucide-react';
+import { CONTACTO, enviarConsulta } from '../config/contacto';
 
 export const PublicarPage: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -12,6 +13,20 @@ export const PublicarPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    enviarConsulta(
+      [
+        'Hola! Quiero publicar una cochera en cocheras.com.ar',
+        '',
+        `Título: ${titulo}`,
+        `Zona: ${zona}`,
+        `Tipo: ${tipo}`,
+        `Precio pretendido: ${precio ? `$ ${precio}` : 'a convenir'}`,
+        `Dirección: ${direccion}`,
+        '',
+        'Descripción:',
+        descripcion,
+      ].join('\n')
+    );
     setSubmitted(true);
   };
 
@@ -36,16 +51,28 @@ export const PublicarPage: React.FC = () => {
             <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-10 h-10" />
             </div>
-            <h2 className="text-2xl font-extrabold text-slate-900">¡Publicación enviada a revisión!</h2>
+            <h2 className="text-2xl font-extrabold text-slate-900">Tus datos están listos para enviar</h2>
             <p className="text-sm text-slate-600 max-w-md mx-auto">
-              Revisaremos los datos de tu cochera en <b>{titulo}</b> y se sincronizará automáticamente en la plataforma.
+              Te abrimos WhatsApp con los datos de <b>{titulo || 'tu cochera'}</b> ya redactados.
+              Tocá enviar y un asesor matriculado revisa la publicación.
             </p>
-            <button
-              onClick={() => setSubmitted(false)}
-              className="px-6 py-2.5 bg-brand-600 text-white font-bold text-sm rounded-xl"
-            >
-              Publicar otra cochera
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+              <a
+                href={`https://wa.me/${CONTACTO.whatsapp}`}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-whatsapp w-full sm:w-auto text-sm"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>No se abrió WhatsApp</span>
+              </a>
+              <button
+                onClick={() => setSubmitted(false)}
+                className="btn btn-outline w-full sm:w-auto text-sm"
+              >
+                Publicar otra cochera
+              </button>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-10 rounded-card border border-slate-200 shadow-lg space-y-6">
@@ -55,8 +82,9 @@ export const PublicarPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Título de la publicación</label>
+                  <label htmlFor="publicar-titulo-de-la-publicacion" className="block text-xs font-bold text-slate-700 uppercase mb-1">Título de la publicación</label>
                   <input
+                    id="publicar-titulo-de-la-publicacion"
                     type="text"
                     placeholder="Ej: Cochera fija en Recoleta"
                     value={titulo}
@@ -67,8 +95,9 @@ export const PublicarPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Barrio / Zona</label>
+                  <label htmlFor="publicar-barrio-zona" className="block text-xs font-bold text-slate-700 uppercase mb-1">Barrio / Zona</label>
                   <select
+                    id="publicar-barrio-zona"
                     value={zona}
                     onChange={(e) => setZona(e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 font-medium"
@@ -86,8 +115,9 @@ export const PublicarPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Tipo de Cochera</label>
+                  <label htmlFor="publicar-tipo-de-cochera" className="block text-xs font-bold text-slate-700 uppercase mb-1">Tipo de Cochera</label>
                   <select
+                    id="publicar-tipo-de-cochera"
                     value={tipo}
                     onChange={(e) => setTipo(e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 font-medium"
@@ -98,8 +128,9 @@ export const PublicarPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Precio Mensual ($ ARS)</label>
+                  <label htmlFor="publicar-precio-mensual-ars" className="block text-xs font-bold text-slate-700 uppercase mb-1">Precio Mensual ($ ARS)</label>
                   <input
+                    id="publicar-precio-mensual-ars"
                     type="number"
                     placeholder="Ej: 50000"
                     value={precio}
@@ -111,8 +142,9 @@ export const PublicarPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Dirección Aproximada</label>
+                <label htmlFor="publicar-direccion-aproximada" className="block text-xs font-bold text-slate-700 uppercase mb-1">Dirección Aproximada</label>
                 <input
+                    id="publicar-direccion-aproximada"
                   type="text"
                   placeholder="Ej: Av. Santa Fe 1800"
                   value={direccion}
@@ -123,8 +155,9 @@ export const PublicarPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Descripción</label>
+                <label htmlFor="publicar-descripcion" className="block text-xs font-bold text-slate-700 uppercase mb-1">Descripción</label>
                 <textarea
+                    id="publicar-descripcion"
                   rows={4}
                   placeholder="Detallá los accesos, si cuenta con portón automático, seguridad 24hs..."
                   value={descripcion}
@@ -138,7 +171,7 @@ export const PublicarPage: React.FC = () => {
             <div className="pt-4">
               <button
                 type="submit"
-                className="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-sm rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                className="btn btn-primary btn-lg btn-block"
               >
                 <span>Enviar Publicación</span>
                 <ArrowRight className="w-4 h-4" />

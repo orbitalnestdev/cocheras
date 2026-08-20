@@ -9,7 +9,6 @@ import {
   MessageCircle,
   ArrowLeft,
   Share2,
-  Heart,
   Car,
   Lock,
   Video,
@@ -32,7 +31,6 @@ export const SingleCocheraPage: React.FC = () => {
   const [relacionadas, setRelacionadas] = useState<Cochera[]>([]);
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [favorite, setFavorite] = useState(false);
 
   // Form contact state
   const [nombre, setNombre] = useState('');
@@ -78,7 +76,7 @@ export const SingleCocheraPage: React.FC = () => {
         <AlertCircle className="w-16 h-16 text-amber-500 mx-auto" />
         <h2 className="text-2xl font-bold">Propiedad no encontrada</h2>
         <p className="text-muted-light">No pudimos encontrar la publicación solicitada.</p>
-        <Link to="/cocheras-particulares" className="inline-block px-6 py-2.5 bg-brand-600 text-white font-bold rounded-xl">
+        <Link to="/cocheras-particulares" className="btn btn-primary">
           Volver al catálogo
         </Link>
       </div>
@@ -115,15 +113,6 @@ export const SingleCocheraPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setFavorite(!favorite)}
-              className={`p-2 rounded-xl border bg-white transition-all shadow-2xs ${
-                favorite ? 'text-red-500 border-red-200' : 'text-slate-600 border-slate-200 hover:text-slate-900'
-              }`}
-              title="Guardar a favoritos"
-            >
-              <Heart className={`w-4 h-4 ${favorite ? 'fill-red-500' : ''}`} />
-            </button>
             <button
               onClick={() => navigator.clipboard.writeText(window.location.href)}
               className="p-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 transition-colors shadow-2xs text-xs font-semibold flex items-center gap-1.5 px-3"
@@ -206,30 +195,35 @@ export const SingleCocheraPage: React.FC = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
                   <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Tipo de Inmueble</span>
-                  <span className="font-extrabold text-base text-slate-900 capitalize flex items-center gap-2">
+                  <span className="font-extrabold text-base text-slate-900 flex items-center gap-2">
                     <Car className="w-4 h-4 text-brand-600" />
-                    {cochera.tipo}
+                    {/* `capitalize` rompía los nombres reales de WP ("Garages y playas"
+                        se veía "Garages Y Playas"), así que sólo se aplica al fallback. */}
+                    {cochera.tipoPropiedad[0] || <span className="capitalize">{cochera.tipo}</span>}
                   </span>
                 </div>
 
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
                   <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Tipo de Acceso</span>
                   <span className="font-extrabold text-base text-slate-900 flex items-center gap-2">
-                    <KeyRound className="w-4 h-4 text-brand-600" />
-                    {cochera.tipoAcceso || 'Portón Automático'}
+                    <KeyRound className={`w-4 h-4 ${cochera.tipoAcceso ? 'text-brand-600' : 'text-slate-300'}`} />
+                    {cochera.tipoAcceso || <span className="text-slate-400 font-semibold text-sm">No informado</span>}
                   </span>
                 </div>
 
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
                   <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Superficie Total</span>
                   <span className="font-extrabold text-base text-slate-900 flex items-center gap-2">
-                    <Maximize2 className="w-4 h-4 text-brand-600" />
-                    {cochera.superficie || 14} m²
+                    <Maximize2 className={`w-4 h-4 ${cochera.superficie ? 'text-brand-600' : 'text-slate-300'}`} />
+                    {cochera.superficie
+                      ? `${cochera.superficie} m²`
+                      : <span className="text-slate-400 font-semibold text-sm">No informada</span>}
                   </span>
                 </div>
               </div>
 
               {/* Security & Service Tags */}
+              {cochera.features.length > 0 && (
               <div className="space-y-3 pt-4 border-t border-slate-100">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
                   Servicios y Equipamiento
@@ -246,6 +240,7 @@ export const SingleCocheraPage: React.FC = () => {
                   ))}
                 </div>
               </div>
+              )}
             </div>
 
             {/* Spacious Description Block */}
@@ -377,7 +372,7 @@ export const SingleCocheraPage: React.FC = () => {
                 {/* Secondary Direct Call Button */}
                 <a
                   href={`tel:${cochera.contacto?.telefono || '+541149973559'}`}
-                  className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all border border-slate-200/80 hover:scale-[1.01] active:scale-[0.98]"
+                  className="btn btn-outline btn-block bg-slate-100 border-slate-200/80"
                 >
                   <Phone className="w-3.5 h-3.5 text-brand-600" />
                   <span>Llamar al {cochera.contacto?.telefono || '+54 11 4997-3559'}</span>
@@ -444,7 +439,7 @@ export const SingleCocheraPage: React.FC = () => {
                     </div>
                     <button
                       type="submit"
-                      className="w-full py-3.5 px-4 bg-slate-900 hover:bg-brand-600 text-white text-xs font-black rounded-xl transition-all duration-300 shadow-md hover:shadow-brand-600/30 hover:scale-[1.01] active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
+                      className="btn btn-dark btn-block"
                     >
                       <Mail className="w-4 h-4" />
                       <span>Enviar Consulta por Email</span>

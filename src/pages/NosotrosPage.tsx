@@ -133,14 +133,14 @@ export const NosotrosPage: React.FC = () => {
               href="https://wa.me/5491136920920?text=Hola!%20Me%20gustar%C3%ADa%20recibir%20asesoramiento%20sobre%20cocheras%20e%20inversiones."
               target="_blank"
               rel="noreferrer"
-              className="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-lg transition-all flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
+              className="btn btn-whatsapp"
             >
               <MessageCircle className="w-4 h-4" />
               <span>Consultar por WhatsApp</span>
             </a>
             <Link
               to="/cocheras"
-              className="px-6 py-3.5 bg-brand-600 hover:bg-brand-500 text-white font-extrabold text-xs rounded-xl shadow-lg transition-all flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
+              className="btn btn-primary"
             >
               <span>Ver Catálogo Completo</span>
               <ArrowRight className="w-4 h-4" />

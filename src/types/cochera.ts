@@ -25,6 +25,9 @@ export interface Cochera {
   tipo: TipoCochera;
   tipoAcceso?: string;
   features: string[];
+  /** Taxonomía `property-type` de WordPress: "Cocheras", "Departamentos", "Oficina"…
+   *  Antes venía mezclada dentro de `features` junto a las características reales. */
+  tipoPropiedad: string[];
   destacada: boolean;
   disponible: boolean;
   imagenes: ImagenCochera[];
@@ -51,6 +54,9 @@ export interface Cochera {
 export interface FiltrosCochera {
   zona?: string;
   tipo?: string;
+  /** Filtra por la taxonomía `property-type` (ver `tipoPropiedad`).
+   *  Las secciones del menú lo usan en vez de una búsqueda de texto libre. */
+  tipoPropiedad?: string;
   precioMin?: number;
   precioMax?: number;
   destacada?: boolean;
@@ -80,6 +86,7 @@ export const CocheraZodSchema = z.object({
   periodo: z.enum(['mes', 'dia', 'hora']).default('mes'),
   tipo: z.enum(['cubierta', 'descubierta']).default('cubierta'),
   features: z.array(z.string()).default([]),
+  tipoPropiedad: z.array(z.string()).default([]),
   destacada: z.boolean().default(false),
   disponible: z.boolean().default(true),
   imagenes: z.array(z.object({
@@ -97,3 +104,13 @@ export const CocheraZodSchema = z.object({
   codigoRef: z.string().optional(),
   fechaPublicacion: z.string().optional()
 });
+
+
+/** Tipos de publicación que son efectivamente una cochera/garage.
+ *  La home se titula "Cocheras Destacadas", así que no puede listar
+ *  departamentos ni oficinas. */
+const TIPOS_COCHERA = ['cochera', 'garage', 'garaje', 'playa', 'estacionamiento'];
+
+export const esCochera = (c: Cochera): boolean =>
+  c.tipoPropiedad.length === 0 ||
+  c.tipoPropiedad.some(t => TIPOS_COCHERA.some(k => t.toLowerCase().includes(k)));

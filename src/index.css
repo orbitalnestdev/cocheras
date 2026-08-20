@@ -46,3 +46,113 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #2563EB;
 }
+
+/* ==========================================================================
+   Sistema de botones
+   Los CTAs eran rectángulos de color plano con un cambio de tono en hover:
+   sin jerarquía, sin profundidad y sin foco visible por teclado.
+   Estas clases dan un lenguaje único a todos los botones del sitio.
+   ========================================================================== */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl
+           font-extrabold tracking-tight whitespace-nowrap cursor-pointer
+           px-6 py-3.5 text-xs
+           transition-all duration-200 ease-out
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+           focus-visible:ring-brand-500 focus-visible:ring-offset-white
+           active:translate-y-0 active:shadow-sm;
+  }
+
+  .btn:disabled {
+    @apply opacity-50 pointer-events-none;
+  }
+
+  .btn-sm { @apply px-4 py-2.5 text-[11px] rounded-lg gap-1.5; }
+  .btn-lg { @apply px-7 py-4 text-sm rounded-2xl; }
+  .btn-block { @apply w-full; }
+
+  /* Acción principal — degradado de marca con halo azul */
+  .btn-primary {
+    background-image: linear-gradient(135deg, #3B82F6 0%, #2563EB 55%, #1D4ED8 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      0 4px 14px -4px rgba(37, 99, 235, 0.55);
+    @apply text-white;
+  }
+  .btn-primary:hover {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      0 10px 24px -6px rgba(37, 99, 235, 0.65);
+    @apply -translate-y-0.5 brightness-[1.07];
+  }
+
+  /* WhatsApp — mismo tratamiento, color propio del canal */
+  .btn-whatsapp {
+    background-image: linear-gradient(135deg, #10B981 0%, #059669 55%, #047857 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      0 4px 14px -4px rgba(5, 150, 105, 0.55);
+    @apply text-white;
+  }
+  .btn-whatsapp:hover {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      0 10px 24px -6px rgba(5, 150, 105, 0.65);
+    @apply -translate-y-0.5 brightness-[1.07];
+  }
+  .btn-whatsapp:focus-visible {
+    @apply ring-emerald-500;
+  }
+
+  /* Acción sobre tarjeta — arranca oscura y toma el color de marca */
+  .btn-dark {
+    background-image: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 4px 12px -4px rgba(15, 23, 42, 0.5);
+    @apply text-white;
+  }
+  .btn-dark:hover,
+  .group:hover .btn-dark {
+    background-image: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 10px 24px -6px rgba(37, 99, 235, 0.6);
+  }
+  .btn-dark:hover { @apply -translate-y-0.5; }
+
+  /* Secundaria sobre fondo claro */
+  .btn-outline {
+    @apply bg-white text-slate-900 border border-slate-300;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+  .btn-outline:hover {
+    @apply -translate-y-0.5 border-brand-300 text-brand-700 bg-brand-50;
+    box-shadow: 0 8px 20px -8px rgba(37, 99, 235, 0.35);
+  }
+
+  /* Secundaria sobre fondo oscuro (hero, footer, banners) */
+  .btn-on-dark {
+    @apply bg-white/10 text-white border border-white/20 backdrop-blur-md;
+  }
+  .btn-on-dark:hover {
+    @apply bg-white/20 border-white/35 -translate-y-0.5;
+  }
+  .btn-on-dark:focus-visible {
+    @apply ring-white ring-offset-transparent;
+  }
+
+  /* Sólida blanca, para el banner de CTA con fondo degradado */
+  .btn-white {
+    @apply bg-white text-slate-900;
+    box-shadow: 0 4px 14px -4px rgba(2, 6, 23, 0.4);
+  }
+  .btn-white:hover {
+    @apply -translate-y-0.5 bg-slate-50;
+    box-shadow: 0 10px 24px -6px rgba(2, 6, 23, 0.5);
+  }
+  .btn-white:focus-visible {
+    @apply ring-white ring-offset-transparent;
+  }
+}

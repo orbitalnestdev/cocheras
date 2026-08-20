@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Car, Mail, Phone, Clock, Facebook, Instagram, MessageCircle } from 'lucide-react';
+import { CONTACTO, REDES } from '../../config/contacto';
 
 export const Footer: React.FC = () => {
   return (
@@ -25,26 +26,30 @@ export const Footer: React.FC = () => {
 
             {/* Social Links */}
             <div className="flex items-center gap-3 pt-2">
+              {REDES.facebook && (
+                <a
+                  href={REDES.facebook}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-muted-dark hover:text-white hover:bg-brand-600 transition-colors"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="w-4 h-4" />
+                </a>
+              )}
+              {REDES.instagram && (
+                <a
+                  href={REDES.instagram}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-muted-dark hover:text-white hover:bg-brand-600 transition-colors"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="w-4 h-4" />
+                </a>
+              )}
               <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-muted-dark hover:text-white hover:bg-brand-600 transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-4 h-4" />
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-muted-dark hover:text-white hover:bg-brand-600 transition-colors"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a
-                href="https://wa.me/5491149973559"
+                href={`https://wa.me/${CONTACTO.whatsapp}`}
                 target="_blank"
                 rel="noreferrer"
                 className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-muted-dark hover:text-white hover:bg-emerald-600 transition-colors"
@@ -96,14 +101,14 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="font-bold text-sm text-white tracking-wider mb-4">Legal & Matrícula</h4>
             <ul className="space-y-2 text-xs text-muted-dark font-medium">
-              <li className="text-white font-bold">Matriculado Esteban Sucari</li>
+              <li className="text-white font-bold">Operaciones matriculadas</li>
               <li>Matrícula CUCICBA 6610</li>
               <li>Matrícula CMPCSI 6068</li>
               <li className="pt-2">
-                <a href="#terminos" className="hover:text-white transition-colors">Términos y Condiciones</a>
+                <Link to="/terminos" className="hover:text-white transition-colors">Términos y Condiciones</Link>
               </li>
               <li>
-                <a href="#privacidad" className="hover:text-white transition-colors">Política de Privacidad</a>
+                <Link to="/privacidad" className="hover:text-white transition-colors">Política de Privacidad</Link>
               </li>
             </ul>
           </div>

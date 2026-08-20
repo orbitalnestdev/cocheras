@@ -72,7 +72,7 @@ export const VideosPage: React.FC = () => {
             Entrevistas y Recorridos en Video
           </h1>
           <p className="text-muted-light text-base leading-relaxed">
-            Mirá las notas de televisión de Esteban Sucari (Mat. CUCICBA 6610) y los recorridos en video por los desarrollos de cocheras en Buenos Aires.
+            Mirá las notas de televisión y los recorridos en video por los desarrollos de cocheras en Buenos Aires.
           </p>
         </div>
 
@@ -142,7 +142,7 @@ export const VideosPage: React.FC = () => {
                   target="_blank"
                   rel="noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm"
+                  className="btn btn-whatsapp btn-block py-2.5"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Consultar por esta Oportunidad</span>
