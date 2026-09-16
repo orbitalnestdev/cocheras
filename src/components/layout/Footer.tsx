@@ -127,10 +127,6 @@ export const Footer: React.FC = () => {
                   WhatsApp 11 3692 0920
                 </a>
               </li>
-              <li className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-brand-500 flex-shrink-0" />
-                <a href="tel:+541149973559" className="hover:text-white transition-colors">+54 11 4997-3559</a>
-              </li>
               <li className="flex items-start gap-2.5">
                 <Clock className="w-4 h-4 text-brand-500 flex-shrink-0 mt-0.5" />
                 <span>11 de Septiembre 2957 2° «C», Núñez, CABA</span>

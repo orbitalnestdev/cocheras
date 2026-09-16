@@ -23,6 +23,10 @@ import {
 import { WordPressService } from '../services/wordpressService';
 import { Cochera } from '../types/cochera';
 import { CocheraCard } from '../components/cocheras/CocheraCard';
+import { CONTACTO, DatosConsulta } from '../config/contacto';
+import { useConsulta, leerHoneypot } from '../hooks/useConsulta';
+import { BotonesEnvio } from '../components/consultas/BotonesEnvio';
+import { ResultadoConsulta } from '../components/consultas/ResultadoConsulta';
 
 export const SingleCocheraPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -37,13 +41,13 @@ export const SingleCocheraPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [telefono, setTelefono] = useState('');
   const [mensaje, setMensaje] = useState('Hola, me interesa solicitar más información sobre esta propiedad.');
-  const [enviado, setEnviado] = useState(false);
+  const consulta = useConsulta();
 
   useEffect(() => {
     const fetchCochera = async () => {
       if (!slug) return;
       setLoading(true);
-      setEnviado(false);
+      consulta.reset();
 
       const item = await WordPressService.getCocheraBySlug(slug);
       if (item) {
@@ -89,9 +93,15 @@ export const SingleCocheraPage: React.FC = () => {
       ? `U$S ${cochera.precio.toLocaleString('es-AR')}`
       : `$ ${cochera.precio.toLocaleString('es-AR')}`;
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const armarDatos = (website = ''): DatosConsulta => ({
+    nombre, email, telefono, mensaje, website,
+    origen: 'Ficha de propiedad',
+    referencia: `${cochera.titulo}${cochera.codigoRef ? ` (Ref ${cochera.codigoRef})` : ''} — ${window.location.href}`,
+  });
+
+  const handleContactSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setEnviado(true);
+    consulta.enviarEmail(armarDatos(leerHoneypot(e)));
   };
 
   const whatsappMessage = encodeURIComponent(
@@ -371,11 +381,11 @@ export const SingleCocheraPage: React.FC = () => {
 
                 {/* Secondary Direct Call Button */}
                 <a
-                  href={`tel:${cochera.contacto?.telefono || '+541149973559'}`}
+                  href={`tel:${CONTACTO.telefonoLink}`}
                   className="btn btn-outline btn-block bg-slate-100 border-slate-200/80"
                 >
                   <Phone className="w-3.5 h-3.5 text-brand-600" />
-                  <span>Llamar al {cochera.contacto?.telefono || '+54 11 4997-3559'}</span>
+                  <span>Llamar al {CONTACTO.telefonoVisible}</span>
                 </a>
               </div>
 
@@ -383,17 +393,20 @@ export const SingleCocheraPage: React.FC = () => {
               <div className="pt-2 space-y-4 border-t border-slate-100">
                 <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                   <Mail className="w-4 h-4 text-brand-600" />
-                  <span>Enviar Consulta por Email</span>
+                  <span>Consultar por esta propiedad</span>
                 </h3>
 
-                {enviado ? (
-                  <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-2 animate-fadeIn">
-                    <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
-                    <h4 className="font-extrabold text-base text-emerald-900">¡Consulta Recibida!</h4>
-                    <p className="text-xs text-emerald-700">Te responderemos a la brevedad.</p>
-                  </div>
+                {consulta.estado !== 'idle' && consulta.estado !== 'enviando' ? (
+                  <ResultadoConsulta
+                    estado={consulta.estado}
+                    error={consulta.error}
+                    onReintentar={consulta.reset}
+                    onWhatsApp={() => consulta.enviarWhatsApp(armarDatos())}
+                    textoNuevo="Volver al formulario"
+                    compacto
+                  />
                 ) : (
-                  <form onSubmit={handleContactSubmit} className="space-y-3">
+                  <form onSubmit={handleContactSubmit} className="space-y-3 relative">
                     <div>
                       <label className="block text-[10px] font-black text-slate-600 uppercase mb-1">Nombre Completo</label>
                       <input
@@ -437,13 +450,11 @@ export const SingleCocheraPage: React.FC = () => {
                         required
                       />
                     </div>
-                    <button
-                      type="submit"
-                      className="btn btn-dark btn-block"
-                    >
-                      <Mail className="w-4 h-4" />
-                      <span>Enviar Consulta por Email</span>
-                    </button>
+                    <BotonesEnvio
+                      enviando={consulta.enviando}
+                      onWhatsApp={() => consulta.enviarWhatsApp(armarDatos())}
+                      compacto
+                    />
                   </form>
                 )}
               </div>

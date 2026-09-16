@@ -489,7 +489,7 @@ export class WordPressService {
           : undefined,
         fechaPublicacion: raw.date ? new Date(raw.date).toLocaleDateString('es-AR') : undefined,
         contacto: {
-          telefono: '+54 11 4997-3559',
+          telefono: '+54 9 11 3692-0920',
           whatsapp: '5491136920920',
           email: 'info@cocheras.com.ar'
         }

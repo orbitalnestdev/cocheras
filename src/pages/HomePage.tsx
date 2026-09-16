@@ -98,6 +98,21 @@ export const HomePage: React.FC = () => {
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center">
           <div className="space-y-5">
 
+            {/* Marca primero: el cliente pidió que al entrar se vea que es Cocheras,
+                con un logo grande, y que el titular quede más abajo y más chico. */}
+            <div className="space-y-3">
+              <img
+                src="/img/logo.png"
+                alt="Cocheras — especialistas en estacionamientos"
+                width={193}
+                height={78}
+                className="h-14 sm:h-16 lg:h-20 w-auto mx-auto drop-shadow-[0_8px_24px_rgba(37,99,235,0.35)]"
+              />
+              <p className="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.32em] text-brand-300">
+                Cocheras e Inversiones
+              </p>
+            </div>
+
             {/* Status Pill with Real WP Count */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-600/20 border border-brand-500/30 backdrop-blur-md">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
@@ -107,13 +122,13 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-white tracking-tight leading-[1.15]">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-[1.15]">
               Encontrá tu cochera <span className="text-gradient">ideal</span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto font-normal leading-relaxed">
-              Segura, cerca tuyo y al mejor precio del mercado.
+              Cerca tuyo y al mejor precio del mercado.
             </p>
 
             {/* Search Bar */}
@@ -177,10 +192,6 @@ export const HomePage: React.FC = () => {
               <span className="flex items-center gap-1.5">
                 <Zap className="w-4 h-4 text-brand-400" />
                 Búsqueda en tiempo real
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-brand-400" />
-                Datos 100% matcheados
               </span>
               <a
                 href="https://wa.me/5491136920920?text=Hola,%20quisiera%20consultar%20por%20cocheras%20disponibles"

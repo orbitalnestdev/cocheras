@@ -1,33 +1,53 @@
 import React, { useState } from 'react';
-import { Car, Upload, CheckCircle2, ShieldCheck, MapPin, DollarSign, ArrowRight, MessageCircle } from 'lucide-react';
-import { CONTACTO, enviarConsulta } from '../config/contacto';
+import { Car, Upload, ShieldCheck, MapPin, DollarSign } from 'lucide-react';
+import { DatosConsulta } from '../config/contacto';
+import { useConsulta, leerHoneypot } from '../hooks/useConsulta';
+import { BotonesEnvio } from '../components/consultas/BotonesEnvio';
+import { ResultadoConsulta } from '../components/consultas/ResultadoConsulta';
+
+const campo = 'w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500';
 
 export const PublicarPage: React.FC = () => {
-  const [submitted, setSubmitted] = useState(false);
   const [titulo, setTitulo] = useState('');
   const [zona, setZona] = useState('Recoleta');
   const [tipo, setTipo] = useState('cubierta');
   const [precio, setPrecio] = useState('');
   const [direccion, setDireccion] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  // El formulario no pedía ningún dato del propietario: no había forma de
+  // responderle salvo que él mismo escribiera por WhatsApp.
+  const [nombre, setNombre] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const consulta = useConsulta();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const armarDatos = (website = ''): DatosConsulta => ({
+    nombre, email, telefono, website,
+    origen: 'Publicar',
+    referencia: titulo,
+    mensaje: [
+      'Quiero publicar una cochera.',
+      '',
+      `Título: ${titulo}`,
+      `Zona: ${zona}`,
+      `Tipo: ${tipo}`,
+      `Precio pretendido: ${precio ? `$ ${precio}` : 'a convenir'}`,
+      `Dirección: ${direccion}`,
+      '',
+      'Descripción:',
+      descripcion,
+    ].join('\n'),
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    enviarConsulta(
-      [
-        'Hola! Quiero publicar una cochera en cocheras.com.ar',
-        '',
-        `Título: ${titulo}`,
-        `Zona: ${zona}`,
-        `Tipo: ${tipo}`,
-        `Precio pretendido: ${precio ? `$ ${precio}` : 'a convenir'}`,
-        `Dirección: ${direccion}`,
-        '',
-        'Descripción:',
-        descripcion,
-      ].join('\n')
-    );
-    setSubmitted(true);
+    consulta.enviarEmail(armarDatos(leerHoneypot(e)));
+  };
+
+  const limpiar = () => {
+    setTitulo(''); setPrecio(''); setDireccion(''); setDescripcion('');
+    setNombre(''); setEmail(''); setTelefono('');
+    consulta.reset();
   };
 
   return (
@@ -46,36 +66,18 @@ export const PublicarPage: React.FC = () => {
           </p>
         </div>
 
-        {submitted ? (
-          <div className="bg-white p-10 rounded-card border border-slate-200 text-center space-y-4 shadow-lg animate-fadeIn">
-            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-10 h-10" />
-            </div>
-            <h2 className="text-2xl font-extrabold text-slate-900">Tus datos están listos para enviar</h2>
-            <p className="text-sm text-slate-600 max-w-md mx-auto">
-              Te abrimos WhatsApp con los datos de <b>{titulo || 'tu cochera'}</b> ya redactados.
-              Tocá enviar y un asesor matriculado revisa la publicación.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
-              <a
-                href={`https://wa.me/${CONTACTO.whatsapp}`}
-                target="_blank"
-                rel="noreferrer"
-                className="btn btn-whatsapp w-full sm:w-auto text-sm"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span>No se abrió WhatsApp</span>
-              </a>
-              <button
-                onClick={() => setSubmitted(false)}
-                className="btn btn-outline w-full sm:w-auto text-sm"
-              >
-                Publicar otra cochera
-              </button>
-            </div>
+        {consulta.estado !== 'idle' && consulta.estado !== 'enviando' ? (
+          <div className="bg-white p-4 sm:p-6 rounded-card border border-slate-200 shadow-lg animate-fadeIn">
+            <ResultadoConsulta
+              estado={consulta.estado}
+              error={consulta.error}
+              onReintentar={consulta.estado === 'error' ? consulta.reset : limpiar}
+              onWhatsApp={() => consulta.enviarWhatsApp(armarDatos())}
+              textoNuevo="Publicar otra cochera"
+            />
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-10 rounded-card border border-slate-200 shadow-lg space-y-6">
+          <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-10 rounded-card border border-slate-200 shadow-lg space-y-6 relative">
             
             <div className="space-y-4">
               <h3 className="font-bold text-lg text-slate-900 border-b pb-2">1. Información Principal</h3>
@@ -136,7 +138,6 @@ export const PublicarPage: React.FC = () => {
                     value={precio}
                     onChange={(e) => setPrecio(e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500"
-                    required
                   />
                 </div>
               </div>
@@ -168,14 +169,32 @@ export const PublicarPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-4">
-              <button
-                type="submit"
-                className="btn btn-primary btn-lg btn-block"
-              >
-                <span>Enviar Publicación</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+            <div className="space-y-4">
+              <h3 className="font-bold text-lg text-slate-900 border-b pb-2">2. Tus datos de contacto</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label htmlFor="publicar-nombre" className="block text-xs font-bold text-slate-700 uppercase mb-1">Nombre</label>
+                  <input id="publicar-nombre" type="text" placeholder="Tu nombre y apellido" value={nombre}
+                    onChange={(e) => setNombre(e.target.value)} className={campo} required />
+                </div>
+                <div>
+                  <label htmlFor="publicar-email" className="block text-xs font-bold text-slate-700 uppercase mb-1">Email</label>
+                  <input id="publicar-email" type="email" placeholder="tu@email.com" value={email}
+                    onChange={(e) => setEmail(e.target.value)} className={campo} required />
+                </div>
+                <div>
+                  <label htmlFor="publicar-telefono" className="block text-xs font-bold text-slate-700 uppercase mb-1">Teléfono</label>
+                  <input id="publicar-telefono" type="tel" placeholder="Ej: 11 5555 4444" value={telefono}
+                    onChange={(e) => setTelefono(e.target.value)} className={campo} />
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <BotonesEnvio
+                enviando={consulta.enviando}
+                onWhatsApp={() => consulta.enviarWhatsApp(armarDatos())}
+              />
             </div>
 
           </form>

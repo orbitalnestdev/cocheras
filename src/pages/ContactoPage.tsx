@@ -1,29 +1,30 @@
 import React, { useState } from 'react';
-import { Mail, Phone, Clock, MapPin, CheckCircle2, Send, MessageCircle, ShieldCheck, Award } from 'lucide-react';
-import { CONTACTO, enviarConsulta } from '../config/contacto';
+import { Mail, Phone, Clock, MapPin, MessageCircle, ShieldCheck, Award } from 'lucide-react';
+import { CONTACTO, DatosConsulta } from '../config/contacto';
+import { useConsulta, leerHoneypot } from '../hooks/useConsulta';
+import { BotonesEnvio } from '../components/consultas/BotonesEnvio';
+import { ResultadoConsulta } from '../components/consultas/ResultadoConsulta';
 
 export const ContactoPage: React.FC = () => {
-  const [enviado, setEnviado] = useState(false);
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [telefono, setTelefono] = useState('');
   const [mensaje, setMensaje] = useState('');
+  const consulta = useConsulta();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const armarDatos = (website = ''): DatosConsulta => ({
+    nombre, email, telefono, mensaje, website,
+    origen: 'Contacto',
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    enviarConsulta(
-      [
-        'Hola! Te escribo desde cocheras.com.ar',
-        '',
-        `Nombre: ${nombre}`,
-        `Email: ${email}`,
-        `Teléfono: ${telefono}`,
-        '',
-        'Consulta:',
-        mensaje,
-      ].join('\n')
-    );
-    setEnviado(true);
+    consulta.enviarEmail(armarDatos(leerHoneypot(e)));
+  };
+
+  const limpiar = () => {
+    setNombre(''); setEmail(''); setTelefono(''); setMensaje('');
+    consulta.reset();
   };
 
   return (
@@ -54,14 +55,6 @@ export const ContactoPage: React.FC = () => {
                 <div>
                   <span className="block text-xs font-semibold text-white">Email</span>
                   <a href="mailto:info@cocheras.com.ar" className="hover:text-white transition-colors">info@cocheras.com.ar</a>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Phone className="w-5 h-5 text-brand-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="block text-xs font-semibold text-white">Teléfonos</span>
-                  <a href="tel:+541149973559" className="hover:text-white transition-colors block">+54 11 4997-3559</a>
                 </div>
               </div>
 
@@ -100,33 +93,15 @@ export const ContactoPage: React.FC = () => {
 
           {/* Form */}
           <div className="lg:col-span-7 bg-white p-8 rounded-card border border-slate-200 shadow-sm">
-            {enviado ? (
-              <div className="p-8 text-center space-y-4">
-                <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
-                <h3 className="text-xl font-bold text-slate-900">Tu consulta está lista</h3>
-                <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
-                  Te abrimos WhatsApp con el mensaje redactado. Tocá enviar y te respondemos a la brevedad.
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-1">
-                  <a
-                    href={`https://wa.me/${CONTACTO.whatsapp}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn btn-whatsapp btn-sm w-full sm:w-auto px-5 py-2.5"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>No se abrió WhatsApp</span>
-                  </a>
-                  <button
-                    onClick={() => setEnviado(false)}
-                    className="btn btn-outline btn-sm w-full sm:w-auto px-5 py-2.5"
-                  >
-                    Escribir otra consulta
-                  </button>
-                </div>
-              </div>
+            {consulta.estado !== 'idle' && consulta.estado !== 'enviando' ? (
+              <ResultadoConsulta
+                estado={consulta.estado}
+                error={consulta.error}
+                onReintentar={consulta.estado === 'error' ? consulta.reset : limpiar}
+                onWhatsApp={() => consulta.enviarWhatsApp(armarDatos())}
+              />
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4 relative">
                 <h3 className="font-bold text-slate-900 text-lg border-b pb-2">Envianos una Consulta</h3>
 
                 <div>
@@ -160,7 +135,7 @@ export const ContactoPage: React.FC = () => {
                     <input
                     id="contacto-telefono-whatsapp"
                       type="tel"
-                      placeholder="Ej: 11 4997 3559"
+                      placeholder="Ej: 11 5555 4444"
                       value={telefono}
                       onChange={(e) => setTelefono(e.target.value)}
                       className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500"
@@ -182,13 +157,10 @@ export const ContactoPage: React.FC = () => {
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-block text-sm"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>Enviar Consulta</span>
-                </button>
+                <BotonesEnvio
+                  enviando={consulta.enviando}
+                  onWhatsApp={() => consulta.enviarWhatsApp(armarDatos())}
+                />
               </form>
             )}
           </div>

@@ -6,6 +6,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import { Cochera } from '../../types/cochera';
 import { MapPin, ArrowRight, MessageCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { CONTACTO } from '../../config/contacto';
 
 interface InteractiveMapProps {
   cocheras: Cochera[];
@@ -419,7 +420,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({ cocheras, onSele
               {/* Lead Capture Action Buttons */}
               <div className="space-y-2 pt-2">
                 <a
-                  href={`https://wa.me/${selectedCochera.contacto?.whatsapp || '5491149973559'}?text=${encodeURIComponent(
+                  href={`https://wa.me/${selectedCochera.contacto?.whatsapp || CONTACTO.whatsapp}?text=${encodeURIComponent(
                     `Hola! Estoy interesado en la cochera "${selectedCochera.titulo}" (${selectedCochera.consultarPrecio || !selectedCochera.precio ? 'Consultar Precio' : `$${selectedCochera.precio.toLocaleString('es-AR')}`}) ubicada en ${selectedCochera.zona} que vi en el mapa.`
                   )}`}
                   target="_blank"

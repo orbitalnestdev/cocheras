@@ -2,6 +2,8 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
+import { Cliengo } from './components/integraciones/Cliengo';
+import { WhatsAppFlotante } from './components/integraciones/WhatsAppFlotante';
 import { HomePage } from './pages/HomePage';
 
 // La home entra en el bundle inicial; el resto se descarga al visitarse.
@@ -38,6 +40,7 @@ export const App: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-paper-50 text-slate-900 font-sans selection:bg-brand-600 selection:text-white">
       <ScrollToTop />
+      <Cliengo />
       <Header />
       <main className="flex-grow">
         <Suspense fallback={<CargandoRuta />}>
@@ -73,6 +76,7 @@ export const App: React.FC = () => {
         </Suspense>
       </main>
       <Footer />
+      <WhatsAppFlotante />
     </div>
   );
 };
